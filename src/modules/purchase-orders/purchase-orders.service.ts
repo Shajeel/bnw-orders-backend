@@ -642,6 +642,79 @@ export class PurchaseOrdersService {
       );
     }
 
+    // Step 1: Fetch all orders and validate they have the same product
+    const allProductIds: string[] = [];
+    const bankOrdersMap = new Map<string, any>();
+    const bipOrdersMap = new Map<string, any>();
+
+    // Fetch bank orders and collect product IDs
+    if (bulkCreateDto.bankOrderIds && bulkCreateDto.bankOrderIds.length > 0) {
+      for (const orderId of bulkCreateDto.bankOrderIds) {
+        if (!Types.ObjectId.isValid(orderId)) {
+          throw new BadRequestException(`Invalid bank order ID format: ${orderId}`);
+        }
+
+        const bankOrder = await this.bankOrderModel
+          .findOne({ _id: orderId, isDeleted: false })
+          .populate('productId')
+          .exec();
+
+        if (!bankOrder) {
+          throw new NotFoundException(`Bank order with ID ${orderId} not found`);
+        }
+
+        if (!bankOrder.productId) {
+          throw new BadRequestException(
+            `Bank order with ID ${orderId} does not have a product assigned`,
+          );
+        }
+
+        const product = bankOrder.productId as any;
+        allProductIds.push(product._id.toString());
+        bankOrdersMap.set(orderId, bankOrder);
+      }
+    }
+
+    // Fetch BIP orders and collect product IDs
+    if (bulkCreateDto.bipOrderIds && bulkCreateDto.bipOrderIds.length > 0) {
+      for (const orderId of bulkCreateDto.bipOrderIds) {
+        if (!Types.ObjectId.isValid(orderId)) {
+          throw new BadRequestException(`Invalid BIP order ID format: ${orderId}`);
+        }
+
+        const bipOrder = await this.bipModel
+          .findOne({ _id: orderId, isDeleted: false })
+          .populate('productId')
+          .exec();
+
+        if (!bipOrder) {
+          throw new NotFoundException(`BIP order with ID ${orderId} not found`);
+        }
+
+        if (!bipOrder.productId) {
+          throw new BadRequestException(
+            `BIP order with ID ${orderId} does not have a product assigned`,
+          );
+        }
+
+        const product = bipOrder.productId as any;
+        allProductIds.push(product._id.toString());
+        bipOrdersMap.set(orderId, bipOrder);
+      }
+    }
+
+    // Validate all orders have the same product
+    const uniqueProductIds = [...new Set(allProductIds)];
+    if (uniqueProductIds.length > 1) {
+      throw new BadRequestException(
+        `All orders must have the same product. Found ${uniqueProductIds.length} different products.`,
+      );
+    }
+
+    if (uniqueProductIds.length === 0) {
+      throw new BadRequestException('No valid products found in the provided orders');
+    }
+
     const result = {
       successCount: 0,
       failedCount: 0,
@@ -649,44 +722,18 @@ export class PurchaseOrdersService {
       failedCreations: [] as Array<{ orderId: string; orderType: string; error: string }>,
     };
 
-    // Process bank orders
+    // Step 2: Process bank orders (we already have them in the map)
     if (bulkCreateDto.bankOrderIds && bulkCreateDto.bankOrderIds.length > 0) {
       for (const orderId of bulkCreateDto.bankOrderIds) {
         try {
-          // Validate order ID
-          if (!Types.ObjectId.isValid(orderId)) {
-            result.failedCount++;
-            result.failedCreations.push({
-              orderId,
-              orderType: 'bank-order',
-              error: 'Invalid order ID format',
-            });
-            continue;
-          }
-
-          // Fetch bank order
-          const bankOrder = await this.bankOrderModel
-            .findOne({ _id: orderId, isDeleted: false })
-            .populate('productId')
-            .exec();
-
+          const bankOrder = bankOrdersMap.get(orderId);
           if (!bankOrder) {
+            // This should never happen since we validated above
             result.failedCount++;
             result.failedCreations.push({
               orderId,
               orderType: 'bank-order',
-              error: 'Bank order not found',
-            });
-            continue;
-          }
-
-          // Check if product exists
-          if (!bankOrder.productId) {
-            result.failedCount++;
-            result.failedCreations.push({
-              orderId,
-              orderType: 'bank-order',
-              error: 'Bank order does not have a product assigned',
+              error: 'Bank order not found in cache',
             });
             continue;
           }
@@ -738,44 +785,18 @@ export class PurchaseOrdersService {
       }
     }
 
-    // Process BIP orders
+    // Step 3: Process BIP orders (we already have them in the map)
     if (bulkCreateDto.bipOrderIds && bulkCreateDto.bipOrderIds.length > 0) {
       for (const orderId of bulkCreateDto.bipOrderIds) {
         try {
-          // Validate order ID
-          if (!Types.ObjectId.isValid(orderId)) {
-            result.failedCount++;
-            result.failedCreations.push({
-              orderId,
-              orderType: 'bip-order',
-              error: 'Invalid order ID format',
-            });
-            continue;
-          }
-
-          // Fetch BIP order
-          const bipOrder = await this.bipModel
-            .findOne({ _id: orderId, isDeleted: false })
-            .populate('productId')
-            .exec();
-
+          const bipOrder = bipOrdersMap.get(orderId);
           if (!bipOrder) {
+            // This should never happen since we validated above
             result.failedCount++;
             result.failedCreations.push({
               orderId,
               orderType: 'bip-order',
-              error: 'BIP order not found',
-            });
-            continue;
-          }
-
-          // Check if product exists
-          if (!bipOrder.productId) {
-            result.failedCount++;
-            result.failedCreations.push({
-              orderId,
-              orderType: 'bip-order',
-              error: 'BIP order does not have a product assigned',
+              error: 'BIP order not found in cache',
             });
             continue;
           }

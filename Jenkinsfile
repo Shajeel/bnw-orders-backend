@@ -245,7 +245,7 @@ pipeline {
                 script {
                     echo "📦 Deploying to server..."
                     try {
-                        sh "${env.CHECKIFY_BACKEND_DEV_SSH}"
+                        //sh "${env.CHECKIFY_BACKEND_DEV_SSH}"
                     } catch (Exception e) {
                         echo "❌ Docker push failed: ${e.getMessage()}"
                         FAILED_STAGE = "Deployment"

@@ -1,4 +1,3 @@
-# ========================================
 # Proxy Server Backend - Dockerfile
 # Optimized for Jenkins CI/CD builds
 

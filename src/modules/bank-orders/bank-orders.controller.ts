@@ -29,6 +29,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { UserRole } from '@common/interfaces/user-role.enum';
 import { ParseObjectIdPipe } from '@common/pipes/parse-objectid.pipe';
 import { UpdateOrderStatusDto } from '@common/dto/update-order-status.dto';
+import { SendWhatsAppConfirmationsDto } from '@common/dto/send-whatsapp-confirmations.dto';
 
 @ApiTags('Bank Orders')
 @ApiBearerAuth('JWT-auth')
@@ -165,5 +166,34 @@ export class BankOrdersController {
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ) {
     return this.bankOrdersService.updateStatus(id, updateOrderStatusDto);
+  }
+
+  @Post('whatsapp/send-confirmations')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Send WhatsApp order confirmations to selected customers (Admin/Staff only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'WhatsApp confirmations sent with success/failure summary',
+    schema: {
+      example: {
+        successCount: 2,
+        failedCount: 1,
+        results: [
+          { orderId: '507f1f77bcf86cd799439011', success: true },
+          { orderId: '507f1f77bcf86cd799439012', success: true },
+          { orderId: '507f1f77bcf86cd799439013', success: false, error: 'Order not found' },
+        ],
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - no order IDs provided' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  async sendWhatsAppConfirmations(@Body() dto: SendWhatsAppConfirmationsDto) {
+    if (!dto.bankOrderIds || dto.bankOrderIds.length === 0) {
+      throw new BadRequestException('At least one bank order ID must be provided');
+    }
+
+    return this.bankOrdersService.sendWhatsAppConfirmations(dto.bankOrderIds);
   }
 }

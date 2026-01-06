@@ -16,6 +16,8 @@ import { ProductsService } from '@modules/products/products.service';
 import { Product } from '@modules/products/schemas/product.schema';
 import { UpdateOrderStatusDto } from '@common/dto/update-order-status.dto';
 import { ProductType } from '@common/enums/product-type.enum';
+import { WhatsAppService } from '@common/services/whatsapp.service';
+import { OrderStatus } from '@common/enums/order-status.enum';
 
 @Injectable()
 export class BipService {
@@ -23,6 +25,7 @@ export class BipService {
     @InjectModel(Bip.name) private bipModel: Model<Bip>,
     private productsService: ProductsService,
     @InjectModel('Bank') private bankModel: Model<any>,
+    private whatsappService: WhatsAppService,
   ) {}
 
   async importFromExcel(
@@ -424,5 +427,198 @@ export class BipService {
     await order.save();
 
     return order;
+  }
+
+  /**
+   * Send WhatsApp confirmation messages for selected BIP orders
+   */
+  async sendWhatsAppConfirmations(orderIds: string[]): Promise<{
+    successCount: number;
+    failedCount: number;
+    results: Array<{ orderId: string; success: boolean; error?: string }>;
+  }> {
+    const result = {
+      successCount: 0,
+      failedCount: 0,
+      results: [] as Array<{ orderId: string; success: boolean; error?: string }>,
+    };
+
+    for (const orderId of orderIds) {
+      try {
+        if (!Types.ObjectId.isValid(orderId)) {
+          result.failedCount++;
+          result.results.push({
+            orderId,
+            success: false,
+            error: 'Invalid order ID format',
+          });
+          continue;
+        }
+
+        const order = await this.bipModel.findOne({
+          _id: orderId,
+          isDeleted: false,
+        });
+
+        if (!order) {
+          result.failedCount++;
+          result.results.push({
+            orderId,
+            success: false,
+            error: 'Order not found',
+          });
+          continue;
+        }
+
+        // Generate unique confirmation token
+        const confirmationToken = this.whatsappService.generateConfirmationToken(
+          orderId,
+          'bip',
+        );
+
+        // Build confirmation URLs
+        const confirmationUrl = this.whatsappService.buildConfirmationUrl(confirmationToken);
+        const cancellationUrl = this.whatsappService.buildCancellationUrl(confirmationToken);
+
+        // Send WhatsApp message
+        const sent = await this.whatsappService.sendConfirmationMessage({
+          phoneNumber: order.mobile1,
+          customerName: order.customerName,
+          orderReference: order.eforms,
+          product: order.product,
+          quantity: order.qty,
+          confirmationToken,
+          confirmationUrl,
+          cancellationUrl,
+        });
+
+        if (sent) {
+          // Update order with confirmation token and timestamp
+          await this.bipModel.findByIdAndUpdate(orderId, {
+            whatsappConfirmationToken: confirmationToken,
+            whatsappConfirmationSentAt: new Date(),
+          });
+
+          result.successCount++;
+          result.results.push({
+            orderId,
+            success: true,
+          });
+        } else {
+          result.failedCount++;
+          result.results.push({
+            orderId,
+            success: false,
+            error: 'Failed to send WhatsApp message',
+          });
+        }
+      } catch (error) {
+        result.failedCount++;
+        result.results.push({
+          orderId,
+          success: false,
+          error: error.message || 'Unknown error occurred',
+        });
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Process WhatsApp confirmation from customer
+   */
+  async processWhatsAppConfirmation(
+    orderId: string,
+    confirmationToken: string,
+    status: 'confirmed' | 'cancelled',
+  ): Promise<{ success: boolean; message: string; order?: any }> {
+    // Validate order ID format
+    if (!Types.ObjectId.isValid(orderId)) {
+      throw new BadRequestException('Invalid order ID format');
+    }
+
+    // Find order by BOTH orderId AND confirmationToken for extra security
+    const order = await this.bipModel.findOne({
+      _id: orderId,
+      whatsappConfirmationToken: confirmationToken,
+      isDeleted: false,
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found or invalid order ID/confirmation token combination');
+    }
+
+    // Check if already processed
+    if (order.whatsappConfirmedAt) {
+      return {
+        success: false,
+        message: 'This order has already been confirmed/cancelled',
+        order: {
+          eforms: order.eforms,
+          status: order.status,
+        },
+      };
+    }
+
+    // Update order status
+    const newStatus = status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+
+    await this.bipModel.findByIdAndUpdate(order._id, {
+      status: newStatus,
+      whatsappConfirmedAt: new Date(),
+    });
+
+    return {
+      success: true,
+      message: `Order ${status} successfully`,
+      order: {
+        orderId: order._id.toString(),
+        eforms: order.eforms,
+        customerName: order.customerName,
+        product: order.product,
+        status: newStatus,
+      },
+    };
+  }
+
+  /**
+   * Simple webhook: Update order status by PO number (eforms)
+   */
+  async updateOrderByPONumber(
+    poNumber: string,
+    status: 'confirmed' | 'cancelled',
+  ): Promise<{ success: boolean; message: string; order?: any }> {
+    const order = await this.bipModel.findOne({
+      eforms: poNumber,
+      isDeleted: false,
+    });
+
+    if (!order) {
+      return {
+        success: false,
+        message: `BIP order with PO number ${poNumber} not found`,
+      };
+    }
+
+    // Update order status
+    const newStatus = status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+
+    await this.bipModel.findByIdAndUpdate(order._id, {
+      status: newStatus,
+      whatsappConfirmedAt: new Date(),
+    });
+
+    return {
+      success: true,
+      message: `Order ${status} successfully`,
+      order: {
+        orderId: order._id.toString(),
+        poNumber: order.eforms,
+        customerName: order.customerName,
+        product: order.product,
+        status: newStatus,
+      },
+    };
   }
 }

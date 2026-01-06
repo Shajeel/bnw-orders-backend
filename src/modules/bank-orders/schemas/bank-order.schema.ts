@@ -105,6 +105,30 @@ export class BankOrder extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Shipment', index: true })
   shipmentId?: Types.ObjectId;
 
+  @ApiProperty({
+    example: 'whatsapp_abc123xyz456',
+    description: 'Unique token for WhatsApp order confirmation',
+    required: false,
+  })
+  @Prop({ unique: true, sparse: true, index: true })
+  whatsappConfirmationToken?: string;
+
+  @ApiProperty({
+    example: '2024-01-15T10:30:00.000Z',
+    description: 'Timestamp when WhatsApp confirmation was sent',
+    required: false,
+  })
+  @Prop()
+  whatsappConfirmationSentAt?: Date;
+
+  @ApiProperty({
+    example: '2024-01-15T10:30:00.000Z',
+    description: 'Timestamp when customer confirmed/cancelled via WhatsApp',
+    required: false,
+  })
+  @Prop()
+  whatsappConfirmedAt?: Date;
+
   @ApiProperty({ example: '2024-01-15T10:30:00.000Z', description: 'Creation timestamp' })
   createdAt?: Date;
 

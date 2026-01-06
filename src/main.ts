@@ -68,7 +68,7 @@ async function bootstrap() {
       'JWT-auth',
     )
     .addServer(`http://localhost:${configService.get<number>('app.port') || 3000}`, 'Development')
-    .addServer('https://api.production.com', 'Production')
+    .addServer('https://b2b.bnwcollections.com', 'Production')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

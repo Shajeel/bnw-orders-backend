@@ -25,6 +25,7 @@ import { DeliveriesModule } from '@modules/deliveries/deliveries.module';
 import { CouriersModule } from '@modules/couriers/couriers.module';
 import { ShipmentsModule } from '@modules/shipments/shipments.module';
 import { DeliveryChallansModule } from '@modules/delivery-challans/delivery-challans.module';
+import { WebhooksModule } from '@modules/webhooks/webhooks.module';
 
 // Guards
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
@@ -77,6 +78,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     CouriersModule,
     ShipmentsModule,
     DeliveryChallansModule,
+    WebhooksModule,
     DashboardModule,
   ],
   providers: [

@@ -282,7 +282,7 @@ export class TcsService {
               quantity: bookingData.quantity,
               weight: bookingData.weightInKg || 0.5,
               uom: 'KG',
-              unitprice: bookingData.declaredValue || 0,
+              unitprice: 0,
               declaredvalue: 10,
               insuredvalue: 10,
               hscode: '',

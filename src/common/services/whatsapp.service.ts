@@ -1,5 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import axios from 'axios';
+import { TheWhatBotContactDto, TheWhatBotResponse } from '@common/dto/thewhatbot-api.dto';
+import { SendWhatsAppMessageDto } from '@common/dto/send-whatsapp-message.dto';
 
 export interface WhatsAppMessagePayload {
   phoneNumber: string;
@@ -18,6 +22,16 @@ export class WhatsAppService {
   private readonly whatsappApiUrl = process.env.WHATSAPP_API_URL || 'https://api.whatsapp.com/send';
   private readonly whatsappApiToken = process.env.WHATSAPP_API_TOKEN || '';
   private readonly webhookBaseUrl = process.env.WEBHOOK_BASE_URL || 'http://localhost:3000';
+
+  // TheWhatBot API configuration
+  private readonly theWhatBotApiUrl = 'https://app.thewhatbot.com/api/contacts';
+  private readonly theWhatBotAccessToken: string;
+  private readonly whatsappFlowId: string;
+
+  constructor(private configService: ConfigService) {
+    this.theWhatBotAccessToken = this.configService.get<string>('WHATSAPP_ACCESS_TOKEN') || '';
+    this.whatsappFlowId = this.configService.get<string>('WHATSAPP_FLOW_ID') || '';
+  }
 
   /**
    * Generate a unique confirmation token for an order
@@ -103,5 +117,103 @@ BNW Collections
    */
   buildCancellationUrl(confirmationToken: string): string {
     return `${this.webhookBaseUrl}/api/v1/webhooks/whatsapp/confirm?token=${confirmationToken}&status=cancelled`;
+  }
+
+  /**
+   * Send WhatsApp message via TheWhatBot API
+   */
+  async sendWhatsAppViaTheWhatBot(data: SendWhatsAppMessageDto): Promise<TheWhatBotResponse> {
+    try {
+      this.logger.log(`Sending WhatsApp message via TheWhatBot to ${data.phone}`);
+
+      // Validate configuration
+      if (!this.theWhatBotAccessToken) {
+        throw new InternalServerErrorException('WhatsApp access token not configured');
+      }
+
+      if (!this.whatsappFlowId) {
+        throw new InternalServerErrorException('WhatsApp flow ID not configured');
+      }
+
+      // Build the request body according to TheWhatBot API format
+      const requestBody: TheWhatBotContactDto = {
+        phone: data.phone,
+        email: '',
+        first_name: data.customerName,
+        last_name: '',
+        actions: [
+          {
+            action: 'set_field_value',
+            field_name: 'order_main_id',
+            value: data.orderNumber,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'full_name',
+            value: data.customerName,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'order items',
+            value: data.product,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'order total amount',
+            value: data.orderPrice.toLocaleString('en-US'),
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'order delivery address',
+            value: data.address,
+          },
+          {
+            action: 'send_flow',
+            flow_id: this.whatsappFlowId,
+          },
+        ],
+      };
+
+      // Make API call to TheWhatBot
+      const response = await axios.post<TheWhatBotResponse>(
+        this.theWhatBotApiUrl,
+        requestBody,
+        {
+          headers: {
+            'X-ACCESS-TOKEN': this.theWhatBotAccessToken,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000, // 30 seconds timeout
+        },
+      );
+
+      this.logger.log(`WhatsApp message sent successfully to ${data.phone}`);
+
+      return {
+        success: true,
+        message: 'WhatsApp message sent successfully',
+        data: response.data,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to send WhatsApp message via TheWhatBot: ${error.message}`);
+
+      if (axios.isAxiosError(error)) {
+        const statusCode = error.response?.status;
+        const errorMessage = error.response?.data?.message || error.message;
+
+        this.logger.error(`TheWhatBot API Error - Status: ${statusCode}, Message: ${errorMessage}`);
+
+        return {
+          success: false,
+          message: `Failed to send WhatsApp message: ${errorMessage}`,
+          data: error.response?.data,
+        };
+      }
+
+      return {
+        success: false,
+        message: `Failed to send WhatsApp message: ${error.message}`,
+      };
+    }
   }
 }

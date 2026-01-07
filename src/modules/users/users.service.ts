@@ -20,7 +20,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      
+
       console.log("createUserDto",createUserDto)
       const existingUser = await this.userModel.findOne({
         email: createUserDto.email,
@@ -31,7 +31,9 @@ export class UsersService {
       }
 
       const user = new this.userModel(createUserDto);
+      console.log('user modal', user);
       const savedUser = await user.save();
+      console.log('user saved', savedUser);
 
       try {
         this.logger.audit(

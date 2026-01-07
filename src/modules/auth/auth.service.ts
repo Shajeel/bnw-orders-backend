@@ -69,7 +69,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
 
     // Save refresh token
-    await this.usersService.updateRefreshToken(user._id, tokens.refreshToken);
+    // await this.usersService.updateRefreshToken(user._id, tokens.refreshToken);
 
     // this.logger.audit('USER_LOGIN', user._id, { email: user.email }, 'AuthService');
 
@@ -106,7 +106,7 @@ export class AuthService {
         ...tokens,
       };
     } catch (error) {
-      console.log("error",error)
+      console.log('error', error);
       if (error instanceof ConflictException) {
         throw error;
       }

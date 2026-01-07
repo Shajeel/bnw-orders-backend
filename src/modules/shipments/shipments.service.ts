@@ -140,7 +140,7 @@ export class ShipmentsService {
       city: bankOrder.city,
       productDescription: productDesc,
       quantity: bankOrder.qty,
-      declaredValue: dispatchDto.declaredValue || bankOrder.redeemedPoints,
+      declaredValue: 10,
       bookingDate: new Date(),
       courierApiResponse: bookingResult.rawResponse,
     });
@@ -267,7 +267,7 @@ export class ShipmentsService {
       city: bipOrder.city,
       productDescription: productDesc,
       quantity: bipOrder.qty,
-      declaredValue: dispatchDto.declaredValue || bipOrder.amount,
+      declaredValue: 10,
       bookingDate: new Date(),
       courierApiResponse: bookingResult.rawResponse,
     });
@@ -364,7 +364,7 @@ export class ShipmentsService {
       city: bankOrder.city,
       productDescription: productDesc,
       quantity: bankOrder.qty,
-      declaredValue: manualDispatchDto.declaredValue || bankOrder.redeemedPoints,
+      declaredValue: 10,
       bookingDate: new Date(),
       deliveryRemarks: manualDispatchDto.remarks,
     });
@@ -459,7 +459,7 @@ export class ShipmentsService {
       city: bipOrder.city,
       productDescription: productDesc,
       quantity: bipOrder.qty,
-      declaredValue: manualDispatchDto.declaredValue || bipOrder.amount,
+      declaredValue: 10,
       bookingDate: new Date(),
       deliveryRemarks: manualDispatchDto.remarks,
     });

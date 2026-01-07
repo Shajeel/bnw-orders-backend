@@ -20,6 +20,8 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
+      
+      console.log("createUserDto",createUserDto)
       const existingUser = await this.userModel.findOne({
         email: createUserDto.email,
       });
@@ -40,6 +42,7 @@ export class UsersService {
 
       return savedUser;
     } catch (error) {
+      console.log("error",error)
       this.logger.error(`Failed to create user: ${error.message}`, error.stack, 'UsersService');
       throw error;
     }

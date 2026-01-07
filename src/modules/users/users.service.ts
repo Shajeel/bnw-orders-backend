@@ -32,8 +32,16 @@ export class UsersService {
 
       const user = new this.userModel(createUserDto);
       console.log('user modal', user);
-      const savedUser = await user.save();
-      console.log('user saved', savedUser);
+
+      let savedUser;
+      try {
+        savedUser = await user.save();
+        console.log('user saved', savedUser);
+      } catch (saveError) {
+        console.error('ERROR SAVING USER:', saveError);
+        console.error('Save error stack:', saveError.stack);
+        throw saveError;
+      }
 
       try {
         this.logger.audit(

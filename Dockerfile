@@ -8,12 +8,15 @@ RUN addgroup -g 1001 -S nodejs && \
 # Set working directory
 WORKDIR /app
 
-# Install dumb-init for proper signal handling and PDF processing dependencies
+# Install dumb-init for proper signal handling, PDF processing dependencies, and build tools for native modules
 RUN apk add --no-cache \
     dumb-init \
     graphicsmagick \
     ghostscript \
-    ghostscript-fonts
+    ghostscript-fonts \
+    python3 \
+    make \
+    g++
 
 # Create necessary directories including temp directory for PDF processing
 RUN mkdir -p /app/logs /app/tmp && \
@@ -32,6 +35,9 @@ COPY --chown=nestjs:nodejs package*.json ./
 
 # Copy scripts and configuration files
 COPY --chown=nestjs:nodejs nest-cli.json ./
+
+# Rebuild native modules for Alpine Linux (bcrypt, etc.)
+RUN npm rebuild bcrypt --build-from-source
 
 # Switch to non-root user
 USER nestjs

@@ -613,7 +613,7 @@ export class BankOrdersService {
     status: 'confirmed' | 'cancelled',
   ): Promise<{ success: boolean; message: string; order?: any }> {
     const order = await this.bankOrderModel.findOne({
-      refNo: poNumber,
+      poNumber: poNumber,
       isDeleted: false,
     });
 

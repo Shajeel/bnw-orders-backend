@@ -250,7 +250,7 @@ export class TcsService {
           mobile: courier.contactPhone || '03004456108',
         },
         shipmentinfo: {
-          costcentercode: 'Test-01',
+          costcentercode: '2',
           referenceno: bookingData.referenceNumber || '',
           contentdesc: bookingData.productDescription,
           servicecode: 'O', // O for Overnight

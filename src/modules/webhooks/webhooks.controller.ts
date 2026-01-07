@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiQuery,
 } from '@nestjs/swagger';
+import { Public } from '@common/decorators/public.decorator';
 import { WebhookAuthGuard } from '@common/guards/webhook-auth.guard';
 import { WhatsAppWebhookDto, OrderConfirmationStatus } from '@common/dto/whatsapp-webhook.dto';
 import { SimpleWhatsAppWebhookDto } from '@common/dto/simple-whatsapp-webhook.dto';
@@ -33,6 +34,7 @@ export class WebhooksController {
    * Public webhook endpoint for WhatsApp order confirmations (GET for customer clicks)
    * Uses token-based verification instead of JWT authentication
    */
+  @Public()
   @Get('whatsapp/confirm')
   @ApiOperation({ summary: 'WhatsApp order confirmation webhook (public, token-secured)' })
   @ApiQuery({
@@ -215,6 +217,7 @@ export class WebhooksController {
    * Public webhook endpoint for WhatsApp order confirmations (POST for programmatic calls)
    * Uses WebhookAuthGuard for signature/token verification
    */
+  @Public()
   @Post('whatsapp/order-confirmation')
   @UseGuards(WebhookAuthGuard)
   @ApiOperation({ summary: 'WhatsApp order confirmation webhook (public, secret key secured)' })
@@ -267,6 +270,7 @@ export class WebhooksController {
    * Simple webhook endpoint - only PO number and status required
    * Searches in both bank orders and BIP orders automatically
    */
+  @Public()
   @Post('whatsapp/confirm-order')
   @UseGuards(WebhookAuthGuard)
   @ApiOperation({ summary: 'Simple WhatsApp order confirmation webhook - PO number + status only' })

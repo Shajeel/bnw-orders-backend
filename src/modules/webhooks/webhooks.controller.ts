@@ -19,6 +19,7 @@ import { Public } from '@common/decorators/public.decorator';
 import { WebhookAuthGuard } from '@common/guards/webhook-auth.guard';
 import { WhatsAppWebhookDto, OrderConfirmationStatus } from '@common/dto/whatsapp-webhook.dto';
 import { SimpleWhatsAppWebhookDto } from '@common/dto/simple-whatsapp-webhook.dto';
+import { CheckOrderStatusDto } from '@common/dto/check-order-status.dto';
 import { BankOrdersService } from '@modules/bank-orders/bank-orders.service';
 import { BipService } from '@modules/bip/bip.service';
 
@@ -318,6 +319,85 @@ export class WebhooksController {
     return {
       success: false,
       message: `Order with PO number ${webhookDto.poNumber} not found in bank orders or BIP orders`,
+    };
+  }
+
+  /**
+   * Public endpoint to check order status by PO number and CNIC
+   * Searches both bank orders and BIP orders
+   */
+  @Public()
+  @Post('order-status/check')
+  @ApiOperation({ summary: 'Check order status by PO number and CNIC (public endpoint)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order status retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Order found',
+        order: {
+          poNumber: 'REF-2024-001',
+          orderDate: '2024-01-15T10:30:00.000Z',
+          customerName: 'John Doe',
+          product: 'Samsung Galaxy S24',
+          brand: 'Samsung',
+          quantity: 1,
+          status: 'dispatched',
+          address: '123 Main Street, Apartment 4B',
+          city: 'Karachi',
+          mobile: '03001234567',
+          shipment: {
+            trackingNumber: 'TRK123456789',
+            consignmentNumber: 'CN987654321',
+            courierName: 'TCS Overland',
+            status: 'in_transit',
+            estimatedDeliveryDate: '2024-01-20T00:00:00.000Z',
+            actualDeliveryDate: null,
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found with the provided PO number and CNIC',
+    schema: {
+      example: {
+        success: false,
+        message: 'Order not found with the provided PO number and CNIC',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request data - PO number and CNIC are required',
+  })
+  async checkOrderStatus(@Body() checkOrderStatusDto: CheckOrderStatusDto) {
+    // Try to find in bank orders first (using refNo)
+    const bankResult = await this.bankOrdersService.checkOrderStatusByPOAndCNIC(
+      checkOrderStatusDto.poNumber,
+      checkOrderStatusDto.cnic,
+    );
+
+    if (bankResult.success) {
+      return bankResult;
+    }
+
+    // If not found in bank orders, try BIP orders (using eforms)
+    const bipResult = await this.bipService.checkOrderStatusByPOAndCNIC(
+      checkOrderStatusDto.poNumber,
+      checkOrderStatusDto.cnic,
+    );
+
+    if (bipResult.success) {
+      return bipResult;
+    }
+
+    // Not found in either table
+    return {
+      success: false,
+      message: 'Order not found with the provided PO number and CNIC',
     };
   }
 }

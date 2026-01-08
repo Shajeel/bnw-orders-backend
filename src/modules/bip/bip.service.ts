@@ -675,4 +675,59 @@ export class BipService {
       },
     };
   }
+
+  /**
+   * Check BIP order status by E-Form and CNIC (Public API for BIP orders)
+   */
+  async checkOrderStatusByEformsAndCNIC(
+    eforms: string,
+    cnic: string,
+  ): Promise<{ success: boolean; message: string; order?: any }> {
+    const order = await this.bipModel
+      .findOne({
+        eforms: eforms,
+        cnic: cnic,
+        isDeleted: false,
+      })
+      .populate({
+        path: 'shipmentId',
+        select: 'trackingNumber consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
+      })
+      .exec();
+
+    if (!order) {
+      return {
+        success: false,
+        message: 'Order not found with the provided E-Form number and CNIC',
+      };
+    }
+
+    // Type assertion for populated shipmentId
+    const shipment = order.shipmentId as any;
+
+    return {
+      success: true,
+      message: 'Order found',
+      order: {
+        eforms: order.eforms,
+        poNumber: order.poNumber,
+        orderDate: order.createdAt,
+        customerName: order.customerName,
+        product: order.product,
+        quantity: order.qty,
+        status: order.status,
+        address: order.address,
+        city: order.city,
+        mobile: order.mobile1,
+        shipment: shipment ? {
+          trackingNumber: shipment.trackingNumber,
+          consignmentNumber: shipment.consignmentNumber,
+          courierName: shipment.courierName,
+          status: shipment.status,
+          estimatedDeliveryDate: shipment.estimatedDeliveryDate,
+          actualDeliveryDate: shipment.actualDeliveryDate,
+        } : null,
+      },
+    };
+  }
 }

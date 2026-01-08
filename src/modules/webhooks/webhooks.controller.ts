@@ -20,6 +20,7 @@ import { WebhookAuthGuard } from '@common/guards/webhook-auth.guard';
 import { WhatsAppWebhookDto, OrderConfirmationStatus } from '@common/dto/whatsapp-webhook.dto';
 import { SimpleWhatsAppWebhookDto } from '@common/dto/simple-whatsapp-webhook.dto';
 import { CheckOrderStatusDto } from '@common/dto/check-order-status.dto';
+import { CheckBipOrderStatusDto } from '@common/dto/check-bip-order-status.dto';
 import { BankOrdersService } from '@modules/bank-orders/bank-orders.service';
 import { BipService } from '@modules/bip/bip.service';
 
@@ -399,5 +400,63 @@ export class WebhooksController {
       success: false,
       message: 'Order not found with the provided PO number and CNIC',
     };
+  }
+
+  /**
+   * Public endpoint to check BIP order status by E-Form and CNIC
+   * Searches only BIP orders using eforms field
+   */
+  @Public()
+  @Post('bip-order-status/check')
+  @ApiOperation({ summary: 'Check BIP order status by E-Form and CNIC (public endpoint)' })
+  @ApiResponse({
+    status: 200,
+    description: 'BIP order status retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Order found',
+        order: {
+          eforms: 'EFORM-2024-001',
+          poNumber: 'PO-2024-001',
+          orderDate: '2024-01-15T10:30:00.000Z',
+          customerName: 'John Doe',
+          product: 'Samsung Galaxy S24',
+          quantity: 1,
+          status: 'dispatched',
+          address: '123 Main Street, Apartment 4B',
+          city: 'Karachi',
+          mobile: '03001234567',
+          shipment: {
+            trackingNumber: 'TRK123456789',
+            consignmentNumber: 'CN987654321',
+            courierName: 'TCS Overland',
+            status: 'in_transit',
+            estimatedDeliveryDate: '2024-01-20T00:00:00.000Z',
+            actualDeliveryDate: null,
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'BIP order not found with the provided E-Form number and CNIC',
+    schema: {
+      example: {
+        success: false,
+        message: 'Order not found with the provided E-Form number and CNIC',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request data - E-Form number and CNIC are required',
+  })
+  async checkBipOrderStatus(@Body() checkBipOrderStatusDto: CheckBipOrderStatusDto) {
+    return this.bipService.checkOrderStatusByEformsAndCNIC(
+      checkBipOrderStatusDto.eforms,
+      checkBipOrderStatusDto.cnic,
+    );
   }
 }

@@ -47,19 +47,6 @@ export function generateDeliveryChallanPDF(
       });
       doc.on('error', reject);
 
-      // Logo space (placeholder - you can add actual logo later)
-      // TODO: Add logo image at coordinates (50, 40) when logo file is available
-      doc
-        .fontSize(20)
-        .font('Helvetica-Bold')
-        .fillColor('#2563EB')
-        .text('BNW', 50, 45)
-        .fontSize(10)
-        .fillColor('#000')
-        .text('COLLECTIONS', 50, 70)
-        .fontSize(8)
-        .text('Bank & Network Warehouse', 50, 83);
-
       // Title - Delivery Challan
       doc
         .fontSize(18)
@@ -103,7 +90,7 @@ export function generateDeliveryChallanPDF(
       doc
         .fontSize(11)
         .font('Helvetica-Bold')
-        .text(`Address: `, 85, customerY + 18, { continued: true })
+        .text(`Address: `, 155, customerY + 18, { continued: true })
         .font('Helvetica')
         .text(`${data.customerAddress} ${data.customerCity}`.toUpperCase(), {
           width: 450,
@@ -196,27 +183,6 @@ export function generateDeliveryChallanPDF(
       doc.text('_______________________', 370, signatureY);
       doc.text('Company Sign', 400, signatureY + 18);
 
-      // Bottom Footer
-      const footerY = 750;
-      doc
-        .fontSize(8)
-        .font('Helvetica')
-        .fillColor('#666')
-        .text(
-          'Office # 35, 4th Floor, Arkay Square,Shahrah-e-Liaquat, Karachi - 74000 Pakistan',
-          50,
-          footerY,
-          { align: 'center' }
-        );
-
-      doc
-        .fontSize(8)
-        .text(
-          'bnwcollections.com       info@bnwcollections.com       03 111 111 269 (UAN-W)',
-          50,
-          footerY + 12,
-          { align: 'center' }
-        );
 
       // Finalize PDF
       doc.end();

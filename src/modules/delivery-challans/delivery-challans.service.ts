@@ -182,8 +182,8 @@ export class DeliveryChallansService {
 
     // Prepare product name
     const productName = bankOrder.brand
-      ? `${bankOrder.brand} ${bankOrder.product}`
-      : bankOrder.product;
+      ? `${bankOrder.brand} ${bankOrder.product} \n ${serialNumber}`
+      : `${bankOrder.product}  \n ${serialNumber}`;
 
     // Create delivery challan
     const deliveryChallan = new this.deliveryChallanModel({
@@ -278,6 +278,7 @@ export class DeliveryChallansService {
 
     // Generate challan number
     const challanNumber = await this.generateChallanNumber();
+    // Prepare product name
 
     // Create delivery challan
     const deliveryChallan = new this.deliveryChallanModel({
@@ -289,7 +290,7 @@ export class DeliveryChallansService {
       customerPhone: bipOrder.mobile1,
       customerAddress: bipOrder.address,
       customerCity: bipOrder.city,
-      productName: bipOrder.product,
+      productName: `${bipOrder.product}  \n ${serialNumber}`,
       productSerialNumber: serialNumber,
       quantity: 1, // Always 1 for delivery challans
       trackingNumber: shipment.trackingNumber,
@@ -495,11 +496,11 @@ export class DeliveryChallansService {
     let productBrand = '';
     if (orderType === 'bank') {
       const bankOrder = orderData as BankOrder;
-      productName = bankOrder.product;
+      productName = `${bankOrder.product}  \n ${serialNumber}`;
       productBrand = bankOrder.brand || '';
     } else {
       const bipOrder = orderData as Bip;
-      productName = bipOrder.product;
+      productName = `${bipOrder.product}  \n ${serialNumber}`;
     }
 
     // Create delivery challan record

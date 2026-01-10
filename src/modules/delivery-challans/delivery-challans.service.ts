@@ -72,42 +72,92 @@ export class DeliveryChallansService {
    * Get serial number from Purchase Order if available
    */
   private async getSerialNumberFromPO(
-    productId: Types.ObjectId,
+    productId: Types.ObjectId | undefined,
     orderId: string,
     orderType: 'bank' | 'bip',
   ): Promise<string | undefined> {
     try {
-      const query: any = {
+      // First try: Query by top-level order ID
+      const query1: any = {
         isDeleted: false,
-        'products.productId': productId,
       };
 
-      // Add order type specific filter
       if (orderType === 'bank') {
-        query['products.bankOrderId'] = new Types.ObjectId(orderId);
+        query1.bankOrderId = new Types.ObjectId(orderId);
       } else {
-        query['products.bipOrderId'] = new Types.ObjectId(orderId);
+        query1.bipOrderId = new Types.ObjectId(orderId);
       }
 
-      const purchaseOrder = await this.purchaseOrderModel.findOne(query).exec();
+      let purchaseOrder = await this.purchaseOrderModel.findOne(query1).exec();
+
+      // Second try: Query by product-level order ID
+      if (!purchaseOrder) {
+        const query2: any = {
+          isDeleted: false,
+          'products.productId': productId,
+        };
+
+        if (orderType === 'bank') {
+          query2['products.bankOrderId'] = new Types.ObjectId(orderId);
+        } else {
+          query2['products.bipOrderId'] = new Types.ObjectId(orderId);
+        }
+
+        purchaseOrder = await this.purchaseOrderModel.findOne(query2).exec();
+      }
 
       if (!purchaseOrder) {
+        console.log(
+          `[DeliveryChallan] No PO found for ${orderType} order ${orderId}`,
+        );
         return undefined;
       }
 
       // Find the matching product in the PO
-      const product = purchaseOrder.products.find(
-        (p) =>
-          p.productId.toString() === productId.toString() &&
-          ((orderType === 'bank' &&
-            p.bankOrderId?.toString() === orderId) ||
-            (orderType === 'bip' &&
-              p.bipOrderId?.toString() === orderId)),
-      );
+      // If we have productId, try to match it
+      let product;
+      if (productId) {
+        product = purchaseOrder.products.find(
+          (p) =>
+            p.productId &&
+            p.productId.toString() === productId.toString() &&
+            p.serialNumber, // Only return if serial number exists
+        );
+      }
 
-      return product?.serialNumber;
+      // If no product found by productId, try to find any product with a serial number for this order
+      if (!product) {
+        product = purchaseOrder.products.find(
+          (p) =>
+            p.serialNumber &&
+            ((orderType === 'bank' &&
+              p.bankOrderId?.toString() === orderId) ||
+              (orderType === 'bip' &&
+                p.bipOrderId?.toString() === orderId)),
+        );
+      }
+
+      // If still no product, just take the first one with a serial number
+      if (!product) {
+        product = purchaseOrder.products.find((p) => p.serialNumber);
+      }
+
+      if (product?.serialNumber) {
+        console.log(
+          `[DeliveryChallan] Found serial number: ${product.serialNumber} for ${orderType} order ${orderId}`,
+        );
+        return product.serialNumber;
+      } else {
+        console.log(
+          `[DeliveryChallan] No serial number in PO for ${orderType} order ${orderId}`,
+        );
+        return undefined;
+      }
     } catch (error) {
-      // If PO lookup fails, just return undefined
+      console.error(
+        `[DeliveryChallan] Error fetching serial number from PO:`,
+        error,
+      );
       return undefined;
     }
   }
@@ -169,7 +219,8 @@ export class DeliveryChallansService {
     // Resolve serial number (priority: manual > PO > null)
     let serialNumber = dto.productSerialNumber;
 
-    if (!serialNumber && bankOrder.productId) {
+    if (!serialNumber) {
+      // Try to get from PO (even if productId is not set)
       serialNumber = await this.getSerialNumberFromPO(
         bankOrder.productId,
         bankOrderId,
@@ -269,7 +320,8 @@ export class DeliveryChallansService {
     // Resolve serial number (priority: manual > PO > null)
     let serialNumber = dto.productSerialNumber;
 
-    if (!serialNumber && bipOrder.productId) {
+    if (!serialNumber) {
+      // Try to get from PO (even if productId is not set)
       serialNumber = await this.getSerialNumberFromPO(
         bipOrder.productId,
         bipOrderId,
@@ -483,13 +535,12 @@ export class DeliveryChallansService {
 
     // Get serial number from PO if available
     let serialNumber: string | undefined;
-    if (orderData.productId) {
-      serialNumber = await this.getSerialNumberFromPO(
-        orderData.productId as Types.ObjectId,
-        orderData._id.toString(),
-        orderType,
-      );
-    }
+    // Always try to get serial number from PO (even if productId is not set)
+    serialNumber = await this.getSerialNumberFromPO(
+      orderData.productId as Types.ObjectId,
+      orderData._id.toString(),
+      orderType,
+    );
 
     // Generate challan number
     const challanNumber = await this.generateChallanNumber();

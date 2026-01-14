@@ -101,6 +101,24 @@ export class TcsService {
     return trimmedName;
   }
 
+  private formatMobileNumber(phoneNumber: string): string {
+    // Remove all spaces and hyphens
+    let cleaned = phoneNumber.replace(/[\s-]/g, '');
+
+    // If already starts with +92, return as is
+    if (cleaned.startsWith('+92')) {
+      return cleaned;
+    }
+
+    // If starts with 0, remove it and prepend +92
+    if (cleaned.startsWith('0')) {
+      return `+92${cleaned.substring(1)}`;
+    }
+
+    // If doesn't start with +92 or 0, just prepend +92
+    return `+92${cleaned}`;
+  }
+
   private async getAccessToken(courier: Courier): Promise<string> {
     // Check if we have a valid cached token
     if (this.tokenCache && new Date() < this.tokenCache.expiry) {
@@ -237,7 +255,7 @@ export class TcsService {
           lat: '',
           lng: '',
           landmark: bookingData.landmark || '',
-          mobile: `+92${bookingData.customerPhone}`,
+          mobile: this.formatMobileNumber(bookingData.customerPhone),
           consigneecnic: bookingData.customerCnic || '',
         },
         vendorinfo: {

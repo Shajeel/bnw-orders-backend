@@ -548,6 +548,7 @@ export class DeliveryChallansService {
     // Prepare product name
     let productName = '';
     let productBrand = '';
+    let productColor = '';
     if (orderType === 'bank') {
       const bankOrder = orderData as BankOrder;
       productName = `${bankOrder.product}  \n ${serialNumber}`;
@@ -555,6 +556,7 @@ export class DeliveryChallansService {
     } else {
       const bipOrder = orderData as Bip;
       productName = `${bipOrder.product}  \n ${serialNumber}`;
+      productColor = bipOrder.color || '';
     }
 
     // Create delivery challan record
@@ -570,6 +572,7 @@ export class DeliveryChallansService {
       customerCity: orderData.city,
       productName,
       productBrand: productBrand || undefined,
+      productColor: productColor || undefined,
       productSerialNumber: serialNumber,
       quantity: 1,
       trackingNumber: shipment.trackingNumber,
@@ -597,6 +600,7 @@ export class DeliveryChallansService {
       itemCode,
       productName,
       productBrand: productBrand || undefined,
+      productColor: productColor || undefined,
       serialNumber,
       quantity: 1,
       trackingNumber: deliveryChallan.trackingNumber,

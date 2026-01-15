@@ -15,6 +15,7 @@ export interface DeliveryChallanPDFData {
   itemCode?: string; // Product code/SKU
   productName: string;
   productBrand?: string;
+  productColor?: string;
   serialNumber?: string;
   quantity: number;
 
@@ -156,9 +157,10 @@ export function generateDeliveryChallanPDF(
         .stroke();
 
       // Table data
-      const fullProductName = data.productBrand
-        ? `${data.productName}`
-        : data.productName;
+      let fullProductName = data.productName;
+      if (data.productColor) {
+        fullProductName = `${data.productName} (${data.productColor})`;
+      }
 
       doc
         .fontSize(10)

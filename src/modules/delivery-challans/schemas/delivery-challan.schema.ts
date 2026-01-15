@@ -74,6 +74,14 @@ export class DeliveryChallan extends Document {
   productBrand?: string;
 
   @ApiProperty({
+    example: 'Black',
+    description: 'Product color',
+    required: false,
+  })
+  @Prop({ trim: true })
+  productColor?: string;
+
+  @ApiProperty({
     example: 'SN123456789',
     description: 'Product serial number',
     required: false,

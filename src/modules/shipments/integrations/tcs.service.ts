@@ -362,7 +362,19 @@ export class TcsService {
           };
         }
 
-        // Check for error array
+        // Check for errorList array (TCS validation errors)
+        if (errorData.errorList && Array.isArray(errorData.errorList)) {
+          const errors = errorData.errorList
+            .map((e: any) => `${e.key}: ${e.errormessage}`)
+            .join(', ');
+          return {
+            success: false,
+            error: errors,
+            rawResponse: errorData,
+          };
+        }
+
+        // Check for error array (fallback for other error formats)
         if (errorData.error && Array.isArray(errorData.error)) {
           const errors = errorData.error
             .map((e: any) => Object.values(e).join(': '))

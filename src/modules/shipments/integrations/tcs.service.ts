@@ -338,7 +338,19 @@ export class TcsService {
           rawResponse: response.data,
         };
       } else {
-        // Handle error response
+        // Handle error response - check for errorList (TCS validation errors)
+        if (response.data?.errorList && Array.isArray(response.data.errorList)) {
+          const errors = response.data.errorList
+            .map((e: any) => `${e.key}: ${e.errormessage}`)
+            .join(', ');
+          return {
+            success: false,
+            error: errors,
+            rawResponse: response.data,
+          };
+        }
+
+        // Fallback to message field
         const errorMsg = response.data?.message || 'Failed to book shipment';
         return {
           success: false,

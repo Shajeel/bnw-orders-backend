@@ -121,6 +121,9 @@ export class BankOrdersController {
   @ApiQuery({ name: 'bankId', required: false, type: String, description: 'Filter by bank ID' })
   @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Filter by start date (ISO format)', example: '2024-01-01' })
   @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Filter by end date (ISO format)', example: '2024-12-31' })
+  @ApiQuery({ name: 'statusFilter', required: false, type: String, description: 'Filter by specific status in history (e.g., confirmed, dispatch)', example: 'confirmed' })
+  @ApiQuery({ name: 'statusStartDate', required: false, type: String, description: 'Start date for status filter (ISO format)', example: '2024-01-01' })
+  @ApiQuery({ name: 'statusEndDate', required: false, type: String, description: 'End date for status filter (ISO format)', example: '2024-01-31' })
   @ApiResponse({ status: 200, description: 'List of bank orders with pagination' })
   findAll(
     @Query('page') page?: number,
@@ -131,6 +134,9 @@ export class BankOrdersController {
     @Query('bankId') bankId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('statusFilter') statusFilter?: string,
+    @Query('statusStartDate') statusStartDate?: string,
+    @Query('statusEndDate') statusEndDate?: string,
   ) {
     return this.bankOrdersService.findAll(
       page ? Number(page) : 1,
@@ -141,6 +147,9 @@ export class BankOrdersController {
       bankId,
       startDate ? new Date(startDate) : undefined,
       endDate ? new Date(endDate) : undefined,
+      statusFilter,
+      statusStartDate ? new Date(statusStartDate) : undefined,
+      statusEndDate ? new Date(statusEndDate) : undefined,
     );
   }
 

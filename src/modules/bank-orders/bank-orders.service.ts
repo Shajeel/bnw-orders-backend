@@ -267,6 +267,9 @@ export class BankOrdersService {
     bankId?: string,
     startDate?: Date,
     endDate?: Date,
+    statusFilter?: string,
+    statusStartDate?: Date,
+    statusEndDate?: Date,
   ): Promise<{
     data: BankOrder[];
     total: number;
@@ -319,6 +322,35 @@ export class BankOrdersService {
         end.setHours(23, 59, 59, 999); // Include entire end date
         query.orderDate.$lte = end;
       }
+    }
+
+    // Add status history filter - filter by specific status and date range
+    if (statusFilter && (statusStartDate || statusEndDate)) {
+      const statusHistoryQuery: any = {
+        'statusHistory.status': statusFilter,
+      };
+
+      if (statusStartDate || statusEndDate) {
+        statusHistoryQuery['statusHistory.timestamp'] = {};
+        if (statusStartDate) {
+          statusHistoryQuery['statusHistory.timestamp'].$gte = new Date(statusStartDate);
+        }
+        if (statusEndDate) {
+          const end = new Date(statusEndDate);
+          end.setHours(23, 59, 59, 999);
+          statusHistoryQuery['statusHistory.timestamp'].$lte = end;
+        }
+      }
+
+      query.$and = query.$and || [];
+      query.$and.push({
+        statusHistory: {
+          $elemMatch: {
+            status: statusFilter,
+            timestamp: statusHistoryQuery['statusHistory.timestamp'] || { $exists: true },
+          },
+        },
+      });
     }
 
     const [data, total] = await Promise.all([

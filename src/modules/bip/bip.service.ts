@@ -855,4 +855,32 @@ export class BipService {
       },
     };
   }
+
+  /**
+   * Soft delete a BIP order
+   */
+  async remove(id: string): Promise<{ message: string }> {
+    // Validate ObjectId
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid BIP order ID format');
+    }
+
+    // Find the order
+    const order = await this.bipModel.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!order) {
+      throw new NotFoundException(`BIP order with ID ${id} not found`);
+    }
+
+    // Soft delete the order
+    order.isDeleted = true;
+    await order.save();
+
+    return {
+      message: `BIP order ${order.eforms} deleted successfully`,
+    };
+  }
 }

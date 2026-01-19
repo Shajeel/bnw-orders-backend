@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   UseInterceptors,
   UploadedFile,
   UseGuards,
@@ -240,5 +241,18 @@ export class BipController {
     }
 
     return this.bipService.sendWhatsAppConfirmations(dto.bipOrderIds);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a BIP order (soft delete - Admin only)' })
+  @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
+  @ApiResponse({ status: 200, description: 'BIP order deleted successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid BIP order ID format' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin only' })
+  @ApiResponse({ status: 404, description: 'BIP order not found' })
+  async remove(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.bipService.remove(id);
   }
 }

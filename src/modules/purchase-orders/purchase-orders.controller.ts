@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Body,
   Param,
@@ -366,6 +367,28 @@ export class PurchaseOrdersController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   async bulkUpdate(@Body() bulkUpdateDto: BulkUpdatePurchaseOrdersDto) {
     return this.purchaseOrdersService.bulkUpdate(bulkUpdateDto);
+  }
+
+  @Put(':id')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Update purchase order with product serial numbers (Admin/Staff only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Purchase order updated successfully',
+    type: PurchaseOrder,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - Invalid ID, merged PO cannot be updated, or product not found',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Purchase order not found' })
+  async updateWithPut(
+    @Param('id') id: string,
+    @Body() updatePurchaseOrderDto: UpdatePurchaseOrderDto,
+  ): Promise<PurchaseOrder> {
+    return this.purchaseOrdersService.update(id, updatePurchaseOrderDto);
   }
 
   @Patch(':id')

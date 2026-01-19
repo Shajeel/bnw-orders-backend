@@ -98,6 +98,26 @@ export class BankOrder extends Document {
   status: OrderStatus;
 
   @ApiProperty({
+    example: [
+      { status: 'pending', timestamp: '2024-01-15T10:00:00.000Z' },
+      { status: 'confirmed', timestamp: '2024-01-15T10:30:00.000Z' },
+      { status: 'processing', timestamp: '2024-01-15T11:00:00.000Z' },
+    ],
+    description: 'History of status changes with timestamps',
+    required: false,
+  })
+  @Prop({
+    type: [
+      {
+        status: { type: String, enum: OrderStatus },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  })
+  statusHistory?: Array<{ status: OrderStatus; timestamp: Date }>;
+
+  @ApiProperty({
     example: '507f1f77bcf86cd799439011',
     description: 'Shipment ID reference (if order is dispatched)',
     required: false,

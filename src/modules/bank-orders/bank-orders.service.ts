@@ -233,6 +233,7 @@ export class BankOrdersService {
       poNumber: String(row['PO #']).trim(),
       orderDate: this.parseExcelDate(row['ORDER DATE']),
       redeemedPoints: Number(row['Redeemed Points']),
+      statusHistory: [{ status: OrderStatus.PENDING, timestamp: new Date() }],
     };
   }
 
@@ -388,8 +389,18 @@ export class BankOrdersService {
       throw new NotFoundException(`Bank order with ID ${id} not found`);
     }
 
-    // Update the status
+    // Update the status and add to status history
     order.status = updateOrderStatusDto.status;
+
+    // Add to status history if not already present
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+    order.statusHistory.push({
+      status: updateOrderStatusDto.status,
+      timestamp: new Date(),
+    });
+
     await order.save();
 
     return order;
@@ -666,6 +677,9 @@ export class BankOrdersService {
     await this.bankOrderModel.findByIdAndUpdate(order._id, {
       status: newStatus,
       whatsappConfirmedAt: new Date(),
+      $push: {
+        statusHistory: { status: newStatus, timestamp: new Date() },
+      },
     });
 
     return {
@@ -706,6 +720,9 @@ export class BankOrdersService {
     await this.bankOrderModel.findByIdAndUpdate(order._id, {
       status: newStatus,
       whatsappConfirmedAt: new Date(),
+      $push: {
+        statusHistory: { status: newStatus, timestamp: new Date() },
+      },
     });
 
     return {

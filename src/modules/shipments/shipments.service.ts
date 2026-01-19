@@ -144,6 +144,16 @@ export class ShipmentsService {
     // Update bank order status to 'dispatch' and link shipment
     bankOrder.status = OrderStatus.DISPATCH;
     bankOrder.shipmentId = shipment._id;
+
+    // Add to status history
+    if (!bankOrder.statusHistory) {
+      bankOrder.statusHistory = [];
+    }
+    bankOrder.statusHistory.push({
+      status: OrderStatus.DISPATCH,
+      timestamp: new Date(),
+    });
+
     await bankOrder.save();
 
     // Auto-generate delivery challan with PDF
@@ -267,6 +277,16 @@ export class ShipmentsService {
     // Update BIP order status to 'dispatch' and link shipment
     bipOrder.status = OrderStatus.DISPATCH;
     bipOrder.shipmentId = shipment._id;
+
+    // Add to status history
+    if (!bipOrder.statusHistory) {
+      bipOrder.statusHistory = [];
+    }
+    bipOrder.statusHistory.push({
+      status: OrderStatus.DISPATCH,
+      timestamp: new Date(),
+    });
+
     await bipOrder.save();
 
     // Auto-generate delivery challan with PDF
@@ -360,6 +380,16 @@ export class ShipmentsService {
     // Update bank order status to 'dispatch' and link shipment
     bankOrder.status = OrderStatus.DISPATCH;
     bankOrder.shipmentId = shipment._id;
+
+    // Add to status history
+    if (!bankOrder.statusHistory) {
+      bankOrder.statusHistory = [];
+    }
+    bankOrder.statusHistory.push({
+      status: OrderStatus.DISPATCH,
+      timestamp: new Date(),
+    });
+
     await bankOrder.save();
 
     // Auto-generate delivery challan with PDF
@@ -453,6 +483,16 @@ export class ShipmentsService {
     // Update BIP order status to 'dispatch' and link shipment
     bipOrder.status = OrderStatus.DISPATCH;
     bipOrder.shipmentId = shipment._id;
+
+    // Add to status history
+    if (!bipOrder.statusHistory) {
+      bipOrder.statusHistory = [];
+    }
+    bipOrder.statusHistory.push({
+      status: OrderStatus.DISPATCH,
+      timestamp: new Date(),
+    });
+
     await bipOrder.save();
 
     // Auto-generate delivery challan with PDF
@@ -590,10 +630,16 @@ export class ShipmentsService {
       if (shipment.bankOrderId) {
         await this.bankOrderModel.findByIdAndUpdate(shipment.bankOrderId, {
           status: OrderStatus.DELIVERED,
+          $push: {
+            statusHistory: { status: OrderStatus.DELIVERED, timestamp: new Date() },
+          },
         });
       } else if (shipment.bipOrderId) {
         await this.bipModel.findByIdAndUpdate(shipment.bipOrderId, {
           status: OrderStatus.DELIVERED,
+          $push: {
+            statusHistory: { status: OrderStatus.DELIVERED, timestamp: new Date() },
+          },
         });
       }
     }
@@ -686,10 +732,16 @@ export class ShipmentsService {
     if (shipment.bankOrderId) {
       await this.bankOrderModel.findByIdAndUpdate(shipment.bankOrderId, {
         status: OrderStatus.PROCESSING,
+        $push: {
+          statusHistory: { status: OrderStatus.PROCESSING, timestamp: new Date() },
+        },
       });
     } else if (shipment.bipOrderId) {
       await this.bipModel.findByIdAndUpdate(shipment.bipOrderId, {
         status: OrderStatus.PROCESSING,
+        $push: {
+          statusHistory: { status: OrderStatus.PROCESSING, timestamp: new Date() },
+        },
       });
     }
 

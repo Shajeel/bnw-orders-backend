@@ -234,6 +234,7 @@ export class BipService {
       orderDate: this.parseExcelDate(row['ORDER DATE']),
       amount: Number(row.AMOUNT),
       color: row.COLOR ? String(row.COLOR).trim() : undefined,
+      statusHistory: [{ status: OrderStatus.PENDING, timestamp: new Date() }],
     };
   }
 
@@ -423,8 +424,18 @@ export class BipService {
       throw new NotFoundException(`BIP order with ID ${id} not found`);
     }
 
-    // Update the status
+    // Update the status and add to status history
     order.status = updateOrderStatusDto.status;
+
+    // Add to status history if not already present
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+    order.statusHistory.push({
+      status: updateOrderStatusDto.status,
+      timestamp: new Date(),
+    });
+
     await order.save();
 
     return order;
@@ -643,6 +654,9 @@ export class BipService {
     await this.bipModel.findByIdAndUpdate(order._id, {
       status: newStatus,
       whatsappConfirmedAt: new Date(),
+      $push: {
+        statusHistory: { status: newStatus, timestamp: new Date() },
+      },
     });
 
     return {
@@ -683,6 +697,9 @@ export class BipService {
     await this.bipModel.findByIdAndUpdate(order._id, {
       status: newStatus,
       whatsappConfirmedAt: new Date(),
+      $push: {
+        statusHistory: { status: newStatus, timestamp: new Date() },
+      },
     });
 
     return {

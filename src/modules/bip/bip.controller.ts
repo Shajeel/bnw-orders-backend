@@ -30,6 +30,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { UserRole } from '@common/interfaces/user-role.enum';
 import { ParseObjectIdPipe } from '@common/pipes/parse-objectid.pipe';
 import { UpdateOrderStatusDto } from '@common/dto/update-order-status.dto';
+import { AddCommentDto } from '@common/dto/add-comment.dto';
 import { UpdateBipOrderDto } from './dto/update-bip-order.dto';
 import { SendWhatsAppConfirmationsDto } from '@common/dto/send-whatsapp-confirmations.dto';
 
@@ -212,6 +213,21 @@ export class BipController {
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ) {
     return this.bipService.updateStatus(id, updateOrderStatusDto);
+  }
+
+  @Post(':id/comments')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Add comment/note to BIP order (Admin/Staff only)' })
+  @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
+  @ApiResponse({ status: 200, description: 'Comment added successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid order ID' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'BIP order not found' })
+  addComment(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() addCommentDto: AddCommentDto,
+  ) {
+    return this.bipService.addComment(id, addCommentDto.comment);
   }
 
   @Post('whatsapp/send-confirmations')

@@ -29,6 +29,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { UserRole } from '@common/interfaces/user-role.enum';
 import { ParseObjectIdPipe } from '@common/pipes/parse-objectid.pipe';
 import { UpdateOrderStatusDto } from '@common/dto/update-order-status.dto';
+import { AddCommentDto } from '@common/dto/add-comment.dto';
 import { UpdateBankOrderDto } from './dto/update-bank-order.dto';
 import { SendWhatsAppConfirmationsDto } from '@common/dto/send-whatsapp-confirmations.dto';
 
@@ -210,6 +211,21 @@ export class BankOrdersController {
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ) {
     return this.bankOrdersService.updateStatus(id, updateOrderStatusDto);
+  }
+
+  @Post(':id/comments')
+  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @ApiOperation({ summary: 'Add comment/note to bank order (Admin/Staff only)' })
+  @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
+  @ApiResponse({ status: 200, description: 'Comment added successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - Invalid order ID' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({ status: 404, description: 'Bank order not found' })
+  addComment(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() addCommentDto: AddCommentDto,
+  ) {
+    return this.bankOrdersService.addComment(id, addCommentDto.comment);
   }
 
   @Post('whatsapp/send-confirmations')

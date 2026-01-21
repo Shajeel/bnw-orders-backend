@@ -149,6 +149,25 @@ export class BankOrder extends Document {
   @Prop()
   whatsappConfirmedAt?: Date;
 
+  @ApiProperty({
+    example: [
+      { comment: 'Customer requested urgent delivery', timestamp: '2024-01-15T10:00:00.000Z' },
+      { comment: 'Payment verified', timestamp: '2024-01-15T10:30:00.000Z' },
+    ],
+    description: 'Order comments/notes with timestamps',
+    required: false,
+  })
+  @Prop({
+    type: [
+      {
+        comment: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  })
+  comments?: Array<{ comment: string; timestamp: Date }>;
+
   @ApiProperty({ example: '2024-01-15T10:30:00.000Z', description: 'Creation timestamp' })
   createdAt?: Date;
 

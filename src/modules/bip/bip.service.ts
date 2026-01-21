@@ -510,6 +510,41 @@ export class BipService {
     return order;
   }
 
+  async addComment(
+    id: string,
+    comment: string,
+  ): Promise<Bip> {
+    // Validate ObjectId
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid order ID format');
+    }
+
+    // Find the order
+    const order = await this.bipModel.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!order) {
+      throw new NotFoundException(`BIP order with ID ${id} not found`);
+    }
+
+    // Initialize comments array if not present
+    if (!order.comments) {
+      order.comments = [];
+    }
+
+    // Add comment with timestamp
+    order.comments.push({
+      comment,
+      timestamp: new Date(),
+    });
+
+    await order.save();
+
+    return order;
+  }
+
   async update(
     id: string,
     updateBipOrderDto: UpdateBipOrderDto,

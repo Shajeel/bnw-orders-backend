@@ -129,6 +129,8 @@ export class PurchaseOrdersService {
     vendorId?: string,
     status?: string,
     search?: string,
+    startDate?: Date,
+    endDate?: Date,
   ): Promise<{
     data: PurchaseOrder[];
     total: number;
@@ -206,6 +208,22 @@ export class PurchaseOrdersService {
       if (status) {
         pipeline.push({
           $match: { status },
+        });
+      }
+
+      // Add date range filter
+      if (startDate || endDate) {
+        const dateMatch: any = {};
+        if (startDate) {
+          dateMatch.$gte = new Date(startDate);
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          dateMatch.$lte = end;
+        }
+        pipeline.push({
+          $match: { createdAt: dateMatch },
         });
       }
 
@@ -299,6 +317,19 @@ export class PurchaseOrdersService {
     // Filter by status if provided
     if (status) {
       query.status = status;
+    }
+
+    // Add date range filter
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = end;
+      }
     }
 
     const [data, total] = await Promise.all([

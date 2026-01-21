@@ -127,6 +127,20 @@ export class PurchaseOrdersController {
     type: String,
     description: 'Search by vendor name, product name, product code, PO number, or eForms',
   })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Filter by start date (ISO format)',
+    example: '2024-01-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'Filter by end date (ISO format)',
+    example: '2024-12-31',
+  })
   @ApiResponse({
     status: 200,
     description: 'Purchase orders retrieved successfully',
@@ -139,6 +153,8 @@ export class PurchaseOrdersController {
     @Query('vendorId') vendorId?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<{
     data: PurchaseOrder[];
     total: number;
@@ -151,6 +167,8 @@ export class PurchaseOrdersController {
       vendorId,
       status,
       search,
+      startDate ? new Date(startDate) : undefined,
+      endDate ? new Date(endDate) : undefined,
     );
   }
 

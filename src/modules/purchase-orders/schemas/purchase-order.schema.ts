@@ -92,6 +92,14 @@ export class PurchaseOrder extends Document {
   status?: string;
 
   @ApiProperty({
+    example: 'Special handling required',
+    description: 'Notes or additional information',
+    required: false,
+  })
+  @Prop({ type: String, trim: true })
+  notes?: string;
+
+  @ApiProperty({
     example: ['PO-2024-0001', 'PO-2024-0002'],
     description: 'Original PO numbers that were merged to create this PO',
     required: false,

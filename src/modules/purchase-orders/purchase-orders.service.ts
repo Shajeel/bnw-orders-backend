@@ -386,25 +386,87 @@ export class PurchaseOrdersService {
       );
     }
 
-    // Update serial numbers for products
-    for (const productUpdate of updatePurchaseOrderDto.products) {
-      const productIndex = purchaseOrder.products.findIndex(
-        (p) => p.productId.toString() === productUpdate.productId,
-      );
-
-      if (productIndex === -1) {
+    // Update vendor if provided
+    if (updatePurchaseOrderDto.vendorId) {
+      if (!Types.ObjectId.isValid(updatePurchaseOrderDto.vendorId)) {
+        throw new BadRequestException('Invalid vendor ID format');
+      }
+      // Verify vendor exists
+      const vendor = await this.vendorsService.findOne(updatePurchaseOrderDto.vendorId);
+      if (!vendor) {
         throw new NotFoundException(
-          `Product with ID ${productUpdate.productId} not found in this PO`,
+          `Vendor with ID ${updatePurchaseOrderDto.vendorId} not found`,
         );
       }
-
-      // Update serial number
-      purchaseOrder.products[productIndex].serialNumber =
-        productUpdate.serialNumber;
+      purchaseOrder.vendorId = new Types.ObjectId(updatePurchaseOrderDto.vendorId);
     }
 
-    // Mark products array as modified so Mongoose saves the changes
-    purchaseOrder.markModified('products');
+    // Update bankOrderId if provided
+    if (updatePurchaseOrderDto.bankOrderId) {
+      if (!Types.ObjectId.isValid(updatePurchaseOrderDto.bankOrderId)) {
+        throw new BadRequestException('Invalid bank order ID format');
+      }
+      purchaseOrder.bankOrderId = new Types.ObjectId(updatePurchaseOrderDto.bankOrderId);
+    }
+
+    // Update bipOrderId if provided
+    if (updatePurchaseOrderDto.bipOrderId) {
+      if (!Types.ObjectId.isValid(updatePurchaseOrderDto.bipOrderId)) {
+        throw new BadRequestException('Invalid BIP order ID format');
+      }
+      purchaseOrder.bipOrderId = new Types.ObjectId(updatePurchaseOrderDto.bipOrderId);
+    }
+
+    // Update notes if provided
+    if (updatePurchaseOrderDto.notes !== undefined) {
+      purchaseOrder.notes = updatePurchaseOrderDto.notes;
+    }
+
+    // Update products if provided
+    if (updatePurchaseOrderDto.products && updatePurchaseOrderDto.products.length > 0) {
+      let totalAmount = 0;
+
+      for (const productUpdate of updatePurchaseOrderDto.products) {
+        const productIndex = purchaseOrder.products.findIndex(
+          (p) => p.productId.toString() === productUpdate.productId,
+        );
+
+        if (productIndex === -1) {
+          throw new NotFoundException(
+            `Product with ID ${productUpdate.productId} not found in this PO`,
+          );
+        }
+
+        // Update quantity if provided
+        if (productUpdate.quantity !== undefined) {
+          purchaseOrder.products[productIndex].quantity = productUpdate.quantity;
+        }
+
+        // Update unit price if provided
+        if (productUpdate.unitPrice !== undefined) {
+          purchaseOrder.products[productIndex].unitPrice = productUpdate.unitPrice;
+        }
+
+        // Update serial number if provided
+        if (productUpdate.serialNumber !== undefined) {
+          purchaseOrder.products[productIndex].serialNumber = productUpdate.serialNumber;
+        }
+
+        // Recalculate total price for this product
+        purchaseOrder.products[productIndex].totalPrice =
+          purchaseOrder.products[productIndex].quantity *
+          purchaseOrder.products[productIndex].unitPrice;
+
+        totalAmount += purchaseOrder.products[productIndex].totalPrice;
+      }
+
+      // Update total amount
+      purchaseOrder.totalAmount = totalAmount;
+
+      // Mark products array as modified so Mongoose saves the changes
+      purchaseOrder.markModified('products');
+    }
+
     await purchaseOrder.save();
 
     return this.findOne(id);

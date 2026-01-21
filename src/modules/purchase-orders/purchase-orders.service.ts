@@ -248,6 +248,7 @@ export class PurchaseOrdersService {
           bankOrder: {
             _id: '$bankOrder._id',
             refNo: '$bankOrder.refNo',
+            poNo: '$bankOrder.poNo',
             customerName: '$bankOrder.customerName',
             cnic: '$bankOrder.cnic',
             product: '$bankOrder.product',
@@ -304,7 +305,7 @@ export class PurchaseOrdersService {
       this.purchaseOrderModel
         .find(query)
         .populate('vendorId', 'vendorName email phone address city')
-        .populate('bankOrderId', 'refNo customerName cnic product giftCode status')
+        .populate('bankOrderId', 'refNo poNo customerName cnic product giftCode status')
         .populate('bipOrderId', 'eforms customerName cnic product giftCode status')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -329,7 +330,7 @@ export class PurchaseOrdersService {
     const purchaseOrder = await this.purchaseOrderModel
       .findOne({ _id: id, isDeleted: false })
       .populate('vendorId', 'vendorName email phone address city')
-      .populate('bankOrderId', 'refNo customerName cnic product giftCode status')
+      .populate('bankOrderId', 'refNo poNo customerName cnic product giftCode status')
       .populate('bipOrderId', 'eforms customerName cnic product giftCode status')
       .exec();
 
@@ -348,7 +349,7 @@ export class PurchaseOrdersService {
     return this.purchaseOrderModel
       .find({ vendorId: new Types.ObjectId(vendorId), isDeleted: false })
       .populate('vendorId', 'vendorName email phone address city')
-      .populate('bankOrderId', 'refNo customerName cnic product giftCode status')
+      .populate('bankOrderId', 'refNo poNo customerName cnic product giftCode status')
       .populate('bipOrderId', 'eforms customerName cnic product giftCode status')
       .sort({ createdAt: -1 })
       .exec();
@@ -597,7 +598,7 @@ export class PurchaseOrdersService {
     const pos = await this.purchaseOrderModel
       .find(query)
       .populate('vendorId', 'vendorName email phone address city')
-      .populate('bankOrderId', 'refNo customerName product')
+      .populate('bankOrderId', 'refNo poNo customerName product')
       .populate('bipOrderId', 'eforms customerName product')
       .sort({ createdAt: -1 })
       .exec();
@@ -623,7 +624,7 @@ export class PurchaseOrdersService {
         isDeleted: false,
       })
       .populate('vendorId', 'vendorName email phone address city')
-      .populate('bankOrderId', 'refNo customerName product')
+      .populate('bankOrderId', 'refNo poNo customerName product')
       .populate('bipOrderId', 'eforms customerName product')
       .exec();
 

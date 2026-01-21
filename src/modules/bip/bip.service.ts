@@ -259,34 +259,55 @@ export class BipService {
     giftCode: string,
     productName: string,
   ): Promise<Product> {
-    // Try to find existing product by bankProductNumber (GIFTCODE) AND productType
-    const existingProducts = await this.productsService.findAll(
-      1,
-      10,
-      undefined,
-      giftCode,
-      ProductType.BIP,
-    );
-
-    if (existingProducts.data && existingProducts.data.length > 0) {
-      // Check if the gift code and product type match exactly
-      const exactMatch = existingProducts.data.find(
-        (p: any) =>
-          p.bankProductNumber === giftCode && p.productType === ProductType.BIP,
+    try {
+      // Try to find existing product by bankProductNumber (GIFTCODE) AND productType
+      const existingProducts = await this.productsService.findAll(
+        1,
+        1000,
+        undefined,
+        giftCode,
+        ProductType.BIP,
       );
-      if (exactMatch) {
-        return exactMatch as Product;
+
+      if (existingProducts.data && existingProducts.data.length > 0) {
+        // Check if the gift code and product type match exactly
+        const exactMatch = existingProducts.data.find(
+          (p: any) =>
+            p.bankProductNumber === giftCode && p.productType === ProductType.BIP,
+        );
+        if (exactMatch) {
+          return exactMatch as Product;
+        }
       }
+
+      // Product doesn't exist, create it without category (will be assigned manually later)
+      const newProduct = await this.productsService.create({
+        name: productName,
+        bankProductNumber: giftCode,
+        productType: ProductType.BIP,
+      });
+
+      return newProduct as Product;
+    } catch (error) {
+      // If it's a conflict error (duplicate bankProductNumber), try to find it again
+      if (error.message?.includes('already exists')) {
+        const existingProducts = await this.productsService.findAll(
+          1,
+          10,
+          undefined,
+          giftCode,
+          ProductType.BIP,
+        );
+        const exactMatch = existingProducts.data.find(
+          (p: any) =>
+            p.bankProductNumber === giftCode && p.productType === ProductType.BIP,
+        );
+        if (exactMatch) {
+          return exactMatch as Product;
+        }
+      }
+      throw new BadRequestException(`Failed to get or create product: ${error.message}`);
     }
-
-    // Create new product without category (will be assigned manually later)
-    const newProduct = await this.productsService.create({
-      name: productName,
-      bankProductNumber: giftCode,
-      productType: ProductType.BIP,
-    });
-
-    return newProduct as Product;
   }
 
   private parseExcelDate(excelDate: any): Date {

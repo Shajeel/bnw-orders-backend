@@ -1158,25 +1158,9 @@ export class PurchaseOrdersService {
       throw new BadRequestException('Invalid bank ID format');
     }
 
-    // Build initial match criteria
-    const initialMatch: any = { isDeleted: false };
-
-    // Add date range filter if provided
-    if (startDate || endDate) {
-      initialMatch.createdAt = {};
-      if (startDate) {
-        initialMatch.createdAt.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        initialMatch.createdAt.$lte = end;
-      }
-    }
-
     // Build aggregation pipeline
     const pipeline: any[] = [
-      { $match: initialMatch },
+      { $match: { isDeleted: false } },
 
       // Lookup BankOrder
       {
@@ -1215,10 +1199,43 @@ export class PurchaseOrdersService {
       {
         $match: this.buildOrderTypeFilter(bankId, orderType),
       },
-
-      // Sort by creation date
-      { $sort: { createdAt: -1 } },
     ];
+
+    // Add date range filter by order date if provided
+    if (startDate || endDate) {
+      const dateFilter: any = { $or: [] };
+      const dateMatch: any = {};
+
+      if (startDate) {
+        dateMatch.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateMatch.$lte = end;
+      }
+
+      // Filter by bankOrder.orderDate or bipOrder.orderDate
+      dateFilter.$or.push(
+        { 'bankOrder.orderDate': dateMatch },
+        { 'bipOrder.orderDate': dateMatch },
+      );
+
+      pipeline.push({ $match: dateFilter });
+    }
+
+    // Sort by order date (fallback to createdAt if no order date)
+    pipeline.push({
+      $addFields: {
+        sortDate: {
+          $ifNull: [
+            '$bankOrder.orderDate',
+            { $ifNull: ['$bipOrder.orderDate', '$createdAt'] },
+          ],
+        },
+      },
+    });
+    pipeline.push({ $sort: { sortDate: -1 } });
 
     const purchaseOrders = await this.purchaseOrderModel
       .aggregate(pipeline)

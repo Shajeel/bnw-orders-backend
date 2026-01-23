@@ -1251,9 +1251,16 @@ export class PurchaseOrdersService {
       }
 
       for (const product of po.products) {
+        // Get order date from bankOrder or bipOrder
+        const orderDate = po.bankOrder?.orderDate || po.bipOrder?.orderDate;
+        const formattedOrderDate = orderDate
+          ? new Date(orderDate).toISOString().split('T')[0]
+          : '';
+
         excelRows.push({
           'PO Number': po.poNumber,
           'Purchase Order Number': po.bankOrder?.poNumber || '',
+          'Order Date': formattedOrderDate,
           'Vendor Name': po.vendor?.vendorName || 'N/A',
           'Product Name': product.productName,
           'Product Serial Number': product.serialNumber || '',

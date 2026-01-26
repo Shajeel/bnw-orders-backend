@@ -218,6 +218,12 @@ export class TcsService {
         middlename = this.validateNamePart(middlename, 'middlename');
       }
 
+      // Determine default weight based on service code
+      // D (Detain) requires minimum 3KG, others default to 0.5KG
+      const serviceCode = bookingData.serviceCode || 'O';
+      const defaultWeight = serviceCode === 'D' ? 3 : 0.5;
+      const weight = bookingData.weightInKg || defaultWeight;
+
       // Prepare TCS booking payload with all customer details
       const tcsPayload = {
         accesstoken: accessToken, // Include access token in payload
@@ -272,7 +278,7 @@ export class TcsService {
           costcentercode: '2',
           referenceno: bookingData.referenceNumber || '',
           contentdesc: bookingData.productDescription,
-          servicecode: bookingData.serviceCode || 'O', // Default to O (Overnight) if not provided
+          servicecode: serviceCode,
           parametertype: '',
           shipmentdate: new Date().toLocaleString('en-GB', {
             day: '2-digit',
@@ -291,7 +297,7 @@ export class TcsService {
           transactiontype: '',
           dsflag: '',
           carrierslug: '',
-          weightinkg: bookingData.weightInKg || 0.5,
+          weightinkg: weight,
           pieces: bookingData.quantity,
           fragile: bookingData.fragile || false,
           remarks: bookingData.specialInstructions || '',
@@ -299,7 +305,7 @@ export class TcsService {
             {
               description: bookingData.productDescription,
               quantity: bookingData.quantity,
-              weight: bookingData.weightInKg || 0.5,
+              weight: weight,
               uom: 'KG',
               unitprice: 0,
               declaredvalue: 10,

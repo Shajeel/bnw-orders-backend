@@ -25,7 +25,10 @@ export class BankOrdersService {
     private whatsappService: WhatsAppService,
   ) {}
 
-  async importFromExcel(file: Express.Multer.File, bankId: string): Promise<ImportResult> {
+  async importFromExcel(
+    file: Express.Multer.File,
+    bankId: string,
+  ): Promise<ImportResult> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
@@ -47,9 +50,7 @@ export class BankOrdersService {
 
     // Validate file type
     const validExtensions = ['.xlsx', '.xls'];
-    const fileExtension = file.originalname.substring(
-      file.originalname.lastIndexOf('.'),
-    );
+    const fileExtension = file.originalname.substring(file.originalname.lastIndexOf('.'));
 
     if (!validExtensions.includes(fileExtension.toLowerCase())) {
       throw new BadRequestException(
@@ -151,9 +152,7 @@ export class BankOrdersService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(
-        `Failed to process Excel file: ${error.message}`,
-      );
+      throw new BadRequestException(`Failed to process Excel file: ${error.message}`);
     }
   }
 
@@ -265,9 +264,7 @@ export class BankOrdersService {
       // Excel dates are days since 1900-01-01
       const excelEpoch = new Date(1900, 0, 1);
       const daysOffset = excelDate - 2; // Excel has a leap year bug
-      return new Date(
-        excelEpoch.getTime() + daysOffset * 24 * 60 * 60 * 1000,
-      );
+      return new Date(excelEpoch.getTime() + daysOffset * 24 * 60 * 60 * 1000);
     }
 
     // If it's a string, try to parse it
@@ -315,7 +312,9 @@ export class BankOrdersService {
 
     // Add status filter - if statusStartDate/statusEndDate provided with status, filter by status history
     // Otherwise, filter by current status
-    const useStatusHistory = (status && (statusStartDate || statusEndDate)) || (statusFilter && (statusStartDate || statusEndDate));
+    const useStatusHistory =
+      (status && (statusStartDate || statusEndDate)) ||
+      (statusFilter && (statusStartDate || statusEndDate));
 
     if (useStatusHistory) {
       // Use status history filtering when dates are provided
@@ -336,7 +335,9 @@ export class BankOrdersService {
           statusHistory: {
             $elemMatch: {
               status: statusToFilter.trim(),
-              ...(Object.keys(timestampQuery).length > 0 && { timestamp: timestampQuery }),
+              ...(Object.keys(timestampQuery).length > 0 && {
+                timestamp: timestampQuery,
+              }),
             },
           },
         });
@@ -374,7 +375,8 @@ export class BankOrdersService {
         .find(query)
         .populate({
           path: 'shipmentId',
-          select: 'trackingNumber consignmentNumber status bookingDate actualDeliveryDate',
+          select:
+            'trackingNumber consignmentNumber status bookingDate actualDeliveryDate',
           populate: {
             path: 'courierId',
             select: 'courierName courierType',
@@ -382,7 +384,8 @@ export class BankOrdersService {
         })
         .populate({
           path: 'deliveryChallan',
-          select: 'challanNumber challanDate pdfURLPath trackingNumber customerName printStatus printedAt printCount',
+          select:
+            'challanNumber challanDate pdfURLPath trackingNumber customerName printStatus printedAt printCount',
         })
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -405,7 +408,8 @@ export class BankOrdersService {
       .findOne({ _id: id, isDeleted: false })
       .populate({
         path: 'shipmentId',
-        select: 'trackingNumber consignmentNumber status customerName customerPhone address city declaredValue bookingDate actualDeliveryDate deliveryRemarks',
+        select:
+          'trackingNumber consignmentNumber status customerName customerPhone address city declaredValue bookingDate actualDeliveryDate deliveryRemarks',
         populate: {
           path: 'courierId',
           select: 'courierName courierType contactPhone contactEmail',
@@ -413,7 +417,8 @@ export class BankOrdersService {
       })
       .populate({
         path: 'deliveryChallan',
-        select: 'challanNumber challanDate pdfURLPath trackingNumber consignmentNumber courierName productName productBrand productSerialNumber quantity customerName customerCnic customerPhone customerAddress customerCity dispatchDate expectedDeliveryDate remarks printStatus printedAt printCount',
+        select:
+          'challanNumber challanDate pdfURLPath trackingNumber consignmentNumber courierName productName productBrand productSerialNumber quantity customerName customerCnic customerPhone customerAddress customerCity dispatchDate expectedDeliveryDate remarks printStatus printedAt printCount',
       })
       .exec();
   }
@@ -454,10 +459,7 @@ export class BankOrdersService {
     return order;
   }
 
-  async addComment(
-    id: string,
-    comment: string,
-  ): Promise<BankOrder> {
+  async addComment(id: string, comment: string): Promise<BankOrder> {
     // Validate ObjectId
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid order ID format');
@@ -489,10 +491,7 @@ export class BankOrdersService {
     return order;
   }
 
-  async update(
-    id: string,
-    updateBankOrderDto: UpdateBankOrderDto,
-  ): Promise<BankOrder> {
+  async update(id: string, updateBankOrderDto: UpdateBankOrderDto): Promise<BankOrder> {
     // Validate ObjectId
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid order ID format');
@@ -509,10 +508,7 @@ export class BankOrdersService {
     }
 
     // Prevent updates if order is already dispatched or delivered
-    if (
-      order.status === OrderStatus.DISPATCH ||
-      order.status === OrderStatus.DELIVERED
-    ) {
+    if (order.status === OrderStatus.DISPATCH || order.status === OrderStatus.DELIVERED) {
       throw new BadRequestException(
         `Cannot update order details. Order is already ${order.status}`,
       );
@@ -583,8 +579,7 @@ export class BankOrdersService {
         // Check if the gift code and product type match exactly
         const exactMatch = existingProducts.data.find(
           (p: any) =>
-            p.bankProductNumber === giftCode &&
-            p.productType === ProductType.BANK_ORDER,
+            p.bankProductNumber === giftCode && p.productType === ProductType.BANK_ORDER,
         );
         if (exactMatch) {
           return exactMatch as Product;
@@ -611,8 +606,7 @@ export class BankOrdersService {
         );
         const exactMatch = existingProducts.data.find(
           (p: any) =>
-            p.bankProductNumber === giftCode &&
-            p.productType === ProductType.BANK_ORDER,
+            p.bankProductNumber === giftCode && p.productType === ProductType.BANK_ORDER,
         );
         if (exactMatch) {
           return exactMatch as Product;
@@ -670,8 +664,10 @@ export class BankOrdersService {
         );
 
         // Build confirmation URLs
-        const confirmationUrl = this.whatsappService.buildConfirmationUrl(confirmationToken);
-        const cancellationUrl = this.whatsappService.buildCancellationUrl(confirmationToken);
+        const confirmationUrl =
+          this.whatsappService.buildConfirmationUrl(confirmationToken);
+        const cancellationUrl =
+          this.whatsappService.buildCancellationUrl(confirmationToken);
 
         // Send WhatsApp message
         const sent = await this.whatsappService.sendConfirmationMessage({
@@ -739,7 +735,9 @@ export class BankOrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found or invalid order ID/confirmation token combination');
+      throw new NotFoundException(
+        'Order not found or invalid order ID/confirmation token combination',
+      );
     }
 
     // Check if already processed
@@ -755,7 +753,8 @@ export class BankOrdersService {
     }
 
     // Update order status
-    const newStatus = status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+    const newStatus =
+      status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
 
     await this.bankOrderModel.findByIdAndUpdate(order._id, {
       status: newStatus,
@@ -798,7 +797,8 @@ export class BankOrdersService {
     }
 
     // Update order status
-    const newStatus = status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+    const newStatus =
+      status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
 
     await this.bankOrderModel.findByIdAndUpdate(order._id, {
       status: newStatus,
@@ -836,7 +836,8 @@ export class BankOrdersService {
       })
       .populate({
         path: 'shipmentId',
-        select: 'trackingNumber consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
+        select:
+          'consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
       })
       .exec();
 
@@ -864,14 +865,16 @@ export class BankOrdersService {
         address: order.address,
         city: order.city,
         mobile: order.mobile1,
-        shipment: shipment ? {
-          trackingNumber: shipment.trackingNumber,
-          consignmentNumber: shipment.consignmentNumber,
-          courierName: shipment.courierName,
-          status: shipment.status,
-          estimatedDeliveryDate: shipment.estimatedDeliveryDate,
-          actualDeliveryDate: shipment.actualDeliveryDate,
-        } : null,
+        shipment: shipment
+          ? {
+              // trackingNumber: shipment.trackingNumber,
+              consignmentNumber: shipment.consignmentNumber,
+              courierName: shipment.courierName,
+              status: shipment.status,
+              estimatedDeliveryDate: shipment.estimatedDeliveryDate,
+              actualDeliveryDate: shipment.actualDeliveryDate,
+            }
+          : null,
       },
     };
   }

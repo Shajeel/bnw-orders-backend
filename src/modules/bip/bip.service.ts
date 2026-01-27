@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as XLSX from 'xlsx';
@@ -54,9 +50,7 @@ export class BipService {
 
     // Validate file type
     const validExtensions = ['.xlsx', '.xls'];
-    const fileExtension = file.originalname.substring(
-      file.originalname.lastIndexOf('.'),
-    );
+    const fileExtension = file.originalname.substring(file.originalname.lastIndexOf('.'));
 
     if (!validExtensions.includes(fileExtension.toLowerCase())) {
       throw new BadRequestException(
@@ -154,9 +148,7 @@ export class BipService {
 
       return result;
     } catch (error) {
-      throw new BadRequestException(
-        `Failed to process Excel file: ${error.message}`,
-      );
+      throw new BadRequestException(`Failed to process Excel file: ${error.message}`);
     }
   }
 
@@ -216,11 +208,7 @@ export class BipService {
       errors.push('ORDER DATE is required');
     }
 
-    if (
-      row.AMOUNT === undefined ||
-      row.AMOUNT === null ||
-      isNaN(Number(row.AMOUNT))
-    ) {
+    if (row.AMOUNT === undefined || row.AMOUNT === null || isNaN(Number(row.AMOUNT))) {
       errors.push('AMOUNT is required and must be a valid number');
     }
 
@@ -239,9 +227,7 @@ export class BipService {
       authorizedReceiver: row.authorized_receiver
         ? String(row.authorized_receiver).trim()
         : undefined,
-      receiverCnic: row.receiver_cnic
-        ? String(row.receiver_cnic).trim()
-        : undefined,
+      receiverCnic: row.receiver_cnic ? String(row.receiver_cnic).trim() : undefined,
       address: String(row.ADDRESS).trim(),
       city: String(row.CITY).trim(),
       product: String(row.PRODUCT).trim(),
@@ -367,7 +353,9 @@ export class BipService {
 
     // Add status filter - if statusStartDate/statusEndDate provided with status, filter by status history
     // Otherwise, filter by current status
-    const useStatusHistory = (status && (statusStartDate || statusEndDate)) || (statusFilter && (statusStartDate || statusEndDate));
+    const useStatusHistory =
+      (status && (statusStartDate || statusEndDate)) ||
+      (statusFilter && (statusStartDate || statusEndDate));
 
     if (useStatusHistory) {
       // Use status history filtering when dates are provided
@@ -388,7 +376,9 @@ export class BipService {
           statusHistory: {
             $elemMatch: {
               status: statusToFilter.trim(),
-              ...(Object.keys(timestampQuery).length > 0 && { timestamp: timestampQuery }),
+              ...(Object.keys(timestampQuery).length > 0 && {
+                timestamp: timestampQuery,
+              }),
             },
           },
         });
@@ -428,7 +418,8 @@ export class BipService {
         .populate('productId', 'name bankProductNumber')
         .populate({
           path: 'shipmentId',
-          select: 'trackingNumber consignmentNumber status bookingDate actualDeliveryDate',
+          select:
+            'trackingNumber consignmentNumber status bookingDate actualDeliveryDate',
           populate: {
             path: 'courierId',
             select: 'courierName courierType',
@@ -436,7 +427,8 @@ export class BipService {
         })
         .populate({
           path: 'deliveryChallan',
-          select: 'challanNumber challanDate pdfURLPath trackingNumber customerName printStatus printedAt printCount',
+          select:
+            'challanNumber challanDate pdfURLPath trackingNumber customerName printStatus printedAt printCount',
         })
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -461,7 +453,8 @@ export class BipService {
       .populate('productId', 'name bankProductNumber')
       .populate({
         path: 'shipmentId',
-        select: 'trackingNumber consignmentNumber status customerName customerPhone address city declaredValue bookingDate actualDeliveryDate deliveryRemarks',
+        select:
+          'trackingNumber consignmentNumber status customerName customerPhone address city declaredValue bookingDate actualDeliveryDate deliveryRemarks',
         populate: {
           path: 'courierId',
           select: 'courierName courierType contactPhone contactEmail',
@@ -469,7 +462,8 @@ export class BipService {
       })
       .populate({
         path: 'deliveryChallan',
-        select: 'challanNumber challanDate pdfURLPath trackingNumber consignmentNumber courierName productName productBrand productSerialNumber quantity customerName customerCnic customerPhone customerAddress customerCity dispatchDate expectedDeliveryDate remarks printStatus printedAt printCount',
+        select:
+          'challanNumber challanDate pdfURLPath trackingNumber consignmentNumber courierName productName productBrand productSerialNumber quantity customerName customerCnic customerPhone customerAddress customerCity dispatchDate expectedDeliveryDate remarks printStatus printedAt printCount',
       })
       .exec();
   }
@@ -510,10 +504,7 @@ export class BipService {
     return order;
   }
 
-  async addComment(
-    id: string,
-    comment: string,
-  ): Promise<Bip> {
+  async addComment(id: string, comment: string): Promise<Bip> {
     // Validate ObjectId
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid order ID format');
@@ -545,10 +536,7 @@ export class BipService {
     return order;
   }
 
-  async update(
-    id: string,
-    updateBipOrderDto: UpdateBipOrderDto,
-  ): Promise<Bip> {
+  async update(id: string, updateBipOrderDto: UpdateBipOrderDto): Promise<Bip> {
     // Validate ObjectId
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid order ID format');
@@ -565,10 +553,7 @@ export class BipService {
     }
 
     // Prevent updates if order is already dispatched or delivered
-    if (
-      order.status === OrderStatus.DISPATCH ||
-      order.status === OrderStatus.DELIVERED
-    ) {
+    if (order.status === OrderStatus.DISPATCH || order.status === OrderStatus.DELIVERED) {
       throw new BadRequestException(
         `Cannot update order details. Order is already ${order.status}`,
       );
@@ -668,8 +653,10 @@ export class BipService {
         );
 
         // Build confirmation URLs
-        const confirmationUrl = this.whatsappService.buildConfirmationUrl(confirmationToken);
-        const cancellationUrl = this.whatsappService.buildCancellationUrl(confirmationToken);
+        const confirmationUrl =
+          this.whatsappService.buildConfirmationUrl(confirmationToken);
+        const cancellationUrl =
+          this.whatsappService.buildCancellationUrl(confirmationToken);
 
         // Send WhatsApp message
         const sent = await this.whatsappService.sendConfirmationMessage({
@@ -737,7 +724,9 @@ export class BipService {
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found or invalid order ID/confirmation token combination');
+      throw new NotFoundException(
+        'Order not found or invalid order ID/confirmation token combination',
+      );
     }
 
     // Check if already processed
@@ -753,7 +742,8 @@ export class BipService {
     }
 
     // Update order status
-    const newStatus = status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+    const newStatus =
+      status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
 
     await this.bipModel.findByIdAndUpdate(order._id, {
       status: newStatus,
@@ -796,7 +786,8 @@ export class BipService {
     }
 
     // Update order status
-    const newStatus = status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
+    const newStatus =
+      status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
 
     await this.bipModel.findByIdAndUpdate(order._id, {
       status: newStatus,
@@ -834,7 +825,8 @@ export class BipService {
       })
       .populate({
         path: 'shipmentId',
-        select: 'trackingNumber consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
+        select:
+          'trackingNumber consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
       })
       .exec();
 
@@ -861,14 +853,16 @@ export class BipService {
         address: order.address,
         city: order.city,
         mobile: order.mobile1,
-        shipment: shipment ? {
-          trackingNumber: shipment.trackingNumber,
-          consignmentNumber: shipment.consignmentNumber,
-          courierName: shipment.courierName,
-          status: shipment.status,
-          estimatedDeliveryDate: shipment.estimatedDeliveryDate,
-          actualDeliveryDate: shipment.actualDeliveryDate,
-        } : null,
+        shipment: shipment
+          ? {
+              trackingNumber: shipment.trackingNumber,
+              consignmentNumber: shipment.consignmentNumber,
+              courierName: shipment.courierName,
+              status: shipment.status,
+              estimatedDeliveryDate: shipment.estimatedDeliveryDate,
+              actualDeliveryDate: shipment.actualDeliveryDate,
+            }
+          : null,
       },
     };
   }
@@ -888,7 +882,8 @@ export class BipService {
       })
       .populate({
         path: 'shipmentId',
-        select: 'trackingNumber consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
+        select:
+          'consignmentNumber status courierName estimatedDeliveryDate actualDeliveryDate',
       })
       .exec();
 
@@ -916,14 +911,16 @@ export class BipService {
         address: order.address,
         city: order.city,
         mobile: order.mobile1,
-        shipment: shipment ? {
-          trackingNumber: shipment.trackingNumber,
-          consignmentNumber: shipment.consignmentNumber,
-          courierName: shipment.courierName,
-          status: shipment.status,
-          estimatedDeliveryDate: shipment.estimatedDeliveryDate,
-          actualDeliveryDate: shipment.actualDeliveryDate,
-        } : null,
+        shipment: shipment
+          ? {
+              // trackingNumber: shipment.trackingNumber,
+              consignmentNumber: shipment.consignmentNumber,
+              courierName: shipment.courierName,
+              status: shipment.status,
+              estimatedDeliveryDate: shipment.estimatedDeliveryDate,
+              actualDeliveryDate: shipment.actualDeliveryDate,
+            }
+          : null,
       },
     };
   }

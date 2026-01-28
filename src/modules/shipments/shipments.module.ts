@@ -9,6 +9,7 @@ import { TcsService } from './integrations/tcs.service';
 import { BankOrder, BankOrderSchema } from '@modules/bank-orders/schemas/bank-order.schema';
 import { Bip, BipSchema } from '@modules/bip/schemas/bip.schema';
 import { DeliveryChallansModule } from '@modules/delivery-challans/delivery-challans.module';
+import { WhatsAppService } from '@common/services/whatsapp.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { DeliveryChallansModule } from '@modules/delivery-challans/delivery-chal
     forwardRef(() => DeliveryChallansModule),
   ],
   controllers: [ShipmentsController],
-  providers: [ShipmentsService, LeopardsService, TcsService],
+  providers: [ShipmentsService, LeopardsService, TcsService, WhatsAppService],
   exports: [ShipmentsService, MongooseModule],
 })
 export class ShipmentsModule {}

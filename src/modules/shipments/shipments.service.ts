@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -20,9 +21,12 @@ import { BankOrder } from '@modules/bank-orders/schemas/bank-order.schema';
 import { Bip } from '@modules/bip/schemas/bip.schema';
 import { OrderStatus } from '@common/enums/order-status.enum';
 import { DeliveryChallansService } from '@modules/delivery-challans/delivery-challans.service';
+import { WhatsAppService } from '@common/services/whatsapp.service';
 
 @Injectable()
 export class ShipmentsService {
+  private readonly logger = new Logger(ShipmentsService.name);
+
   constructor(
     @InjectModel(Shipment.name) private shipmentModel: Model<Shipment>,
     @InjectModel('BankOrder') private bankOrderModel: Model<BankOrder>,
@@ -32,6 +36,7 @@ export class ShipmentsService {
     private tcsService: TcsService,
     @Inject(forwardRef(() => DeliveryChallansService))
     private deliveryChallansService: DeliveryChallansService,
+    private whatsAppService: WhatsAppService,
   ) {}
 
   async dispatchBankOrder(
@@ -163,6 +168,36 @@ export class ShipmentsService {
     } catch (error) {
       // Log error but don't fail the dispatch
       console.error('Failed to auto-generate delivery challan:', error);
+    }
+
+    // Send WhatsApp dispatch notification
+    try {
+      await this.whatsAppService.sendWhatsAppDirectFormat({
+        phone: bankOrder.mobile1,
+        email: '',
+        first_name: bankOrder.customerName,
+        last_name: '',
+        actions: [
+          {
+            action: 'set_field_value',
+            field_name: 'couriername',
+            value: courier.courierName,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'trackingnumbercourier',
+            value: shipment.consignmentNumber || shipment.trackingNumber,
+          },
+          {
+            action: 'send_flow',
+            flow_id: '1769515248242',
+          },
+        ],
+      });
+      this.logger.log(`WhatsApp dispatch notification sent to ${bankOrder.mobile1}`);
+    } catch (error) {
+      // Log error but don't fail the dispatch
+      this.logger.error(`Failed to send WhatsApp dispatch notification: ${error.message}`);
     }
 
     return shipment;
@@ -299,6 +334,36 @@ export class ShipmentsService {
       console.error('Failed to auto-generate delivery challan:', error);
     }
 
+    // Send WhatsApp dispatch notification
+    try {
+      await this.whatsAppService.sendWhatsAppDirectFormat({
+        phone: bipOrder.mobile1,
+        email: '',
+        first_name: bipOrder.customerName,
+        last_name: '',
+        actions: [
+          {
+            action: 'set_field_value',
+            field_name: 'couriername',
+            value: courier.courierName,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'trackingnumbercourier',
+            value: shipment.consignmentNumber || shipment.trackingNumber,
+          },
+          {
+            action: 'send_flow',
+            flow_id: '1769515248242',
+          },
+        ],
+      });
+      this.logger.log(`WhatsApp dispatch notification sent to ${bipOrder.mobile1}`);
+    } catch (error) {
+      // Log error but don't fail the dispatch
+      this.logger.error(`Failed to send WhatsApp dispatch notification: ${error.message}`);
+    }
+
     return shipment;
   }
 
@@ -402,6 +467,36 @@ export class ShipmentsService {
       console.error('Failed to auto-generate delivery challan:', error);
     }
 
+    // Send WhatsApp dispatch notification
+    try {
+      await this.whatsAppService.sendWhatsAppDirectFormat({
+        phone: bankOrder.mobile1,
+        email: '',
+        first_name: bankOrder.customerName,
+        last_name: '',
+        actions: [
+          {
+            action: 'set_field_value',
+            field_name: 'couriername',
+            value: courier.courierName,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'trackingnumbercourier',
+            value: shipment.consignmentNumber || shipment.trackingNumber,
+          },
+          {
+            action: 'send_flow',
+            flow_id: '1769515248242',
+          },
+        ],
+      });
+      this.logger.log(`WhatsApp dispatch notification sent to ${bankOrder.mobile1}`);
+    } catch (error) {
+      // Log error but don't fail the dispatch
+      this.logger.error(`Failed to send WhatsApp dispatch notification: ${error.message}`);
+    }
+
     return shipment;
   }
 
@@ -503,6 +598,36 @@ export class ShipmentsService {
     } catch (error) {
       // Log error but don't fail the dispatch
       console.error('Failed to auto-generate delivery challan:', error);
+    }
+
+    // Send WhatsApp dispatch notification
+    try {
+      await this.whatsAppService.sendWhatsAppDirectFormat({
+        phone: bipOrder.mobile1,
+        email: '',
+        first_name: bipOrder.customerName,
+        last_name: '',
+        actions: [
+          {
+            action: 'set_field_value',
+            field_name: 'couriername',
+            value: courier.courierName,
+          },
+          {
+            action: 'set_field_value',
+            field_name: 'trackingnumbercourier',
+            value: shipment.consignmentNumber || shipment.trackingNumber,
+          },
+          {
+            action: 'send_flow',
+            flow_id: '1769515248242',
+          },
+        ],
+      });
+      this.logger.log(`WhatsApp dispatch notification sent to ${bipOrder.mobile1}`);
+    } catch (error) {
+      // Log error but don't fail the dispatch
+      this.logger.error(`Failed to send WhatsApp dispatch notification: ${error.message}`);
     }
 
     return shipment;

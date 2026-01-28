@@ -19,9 +19,11 @@ export interface WhatsAppMessagePayload {
 @Injectable()
 export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name);
-  private readonly whatsappApiUrl = process.env.WHATSAPP_API_URL || 'https://api.whatsapp.com/send';
+  private readonly whatsappApiUrl =
+    process.env.WHATSAPP_API_URL || 'https://api.whatsapp.com/send';
   private readonly whatsappApiToken = process.env.WHATSAPP_API_TOKEN || '';
-  private readonly webhookBaseUrl = process.env.WEBHOOK_BASE_URL || 'http://localhost:3000';
+  private readonly webhookBaseUrl =
+    process.env.WEBHOOK_BASE_URL || 'http://localhost:3000';
 
   // TheWhatBot API configuration
   private readonly theWhatBotApiUrl = 'https://app.thewhatbot.com/api/contacts';
@@ -29,7 +31,8 @@ export class WhatsAppService {
   private readonly whatsappFlowId: string;
 
   constructor(private configService: ConfigService) {
-    this.theWhatBotAccessToken = this.configService.get<string>('WHATSAPP_ACCESS_TOKEN') || '';
+    this.theWhatBotAccessToken =
+      this.configService.get<string>('WHATSAPP_ACCESS_TOKEN') || '';
     this.whatsappFlowId = this.configService.get<string>('WHATSAPP_FLOW_ID') || '';
   }
 
@@ -123,7 +126,9 @@ BNW Collections
    * Send WhatsApp message via TheWhatBot API
    * Accepts data in SendWhatsAppMessageDto format and transforms to TheWhatBot format
    */
-  async sendWhatsAppViaTheWhatBot(data: SendWhatsAppMessageDto): Promise<TheWhatBotResponse> {
+  async sendWhatsAppViaTheWhatBot(
+    data: SendWhatsAppMessageDto,
+  ): Promise<TheWhatBotResponse> {
     try {
       this.logger.log(`Sending WhatsApp message via TheWhatBot to ${data.phone}`);
 
@@ -196,13 +201,17 @@ BNW Collections
         data: response.data,
       };
     } catch (error) {
-      this.logger.error(`Failed to send WhatsApp message via TheWhatBot: ${error.message}`);
+      this.logger.error(
+        `Failed to send WhatsApp message via TheWhatBot: ${error.message}`,
+      );
 
       if (axios.isAxiosError(error)) {
         const statusCode = error.response?.status;
         const errorMessage = error.response?.data?.message || error.message;
 
-        this.logger.error(`TheWhatBot API Error - Status: ${statusCode}, Message: ${errorMessage}`);
+        this.logger.error(
+          `TheWhatBot API Error - Status: ${statusCode}, Message: ${errorMessage}`,
+        );
 
         return {
           success: false,
@@ -222,7 +231,9 @@ BNW Collections
    * Send WhatsApp message via TheWhatBot API (Direct format)
    * Accepts data directly in TheWhatBot format from frontend
    */
-  async sendWhatsAppDirectFormat(data: TheWhatBotContactDto): Promise<TheWhatBotResponse> {
+  async sendWhatsAppDirectFormat(
+    data: TheWhatBotContactDto,
+  ): Promise<TheWhatBotResponse> {
     try {
       this.logger.log(`Sending WhatsApp message via TheWhatBot to ${data.phone}`);
 
@@ -232,17 +243,13 @@ BNW Collections
       }
 
       // Make API call to TheWhatBot
-      const response = await axios.post<TheWhatBotResponse>(
-        this.theWhatBotApiUrl,
-        data,
-        {
-          headers: {
-            'X-ACCESS-TOKEN': this.theWhatBotAccessToken,
-            'Content-Type': 'application/json',
-          },
-          timeout: 30000, // 30 seconds timeout
+      const response = await axios.post<TheWhatBotResponse>(this.theWhatBotApiUrl, data, {
+        headers: {
+          'X-ACCESS-TOKEN': this.theWhatBotAccessToken,
+          'Content-Type': 'application/json',
         },
-      );
+        timeout: 30000, // 30 seconds timeout
+      });
 
       this.logger.log(`WhatsApp message sent successfully to ${data.phone}`);
 
@@ -252,13 +259,17 @@ BNW Collections
         data: response.data,
       };
     } catch (error) {
-      this.logger.error(`Failed to send WhatsApp message via TheWhatBot: ${error.message}`);
+      this.logger.error(
+        `Failed to send WhatsApp message via TheWhatBot: ${error.message}`,
+      );
 
       if (axios.isAxiosError(error)) {
         const statusCode = error.response?.status;
         const errorMessage = error.response?.data?.message || error.message;
 
-        this.logger.error(`TheWhatBot API Error - Status: ${statusCode}, Message: ${errorMessage}`);
+        this.logger.error(
+          `TheWhatBot API Error - Status: ${statusCode}, Message: ${errorMessage}`,
+        );
 
         return {
           success: false,

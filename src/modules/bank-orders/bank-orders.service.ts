@@ -294,10 +294,11 @@ export class BankOrdersService {
     const skip = (page - 1) * limit;
     const query: any = { isDeleted: false };
 
-    // Add search filter - search across multiple fields
+    // Store search conditions for later
+    let searchConditions: any[] | null = null;
     if (search && search.trim()) {
       const searchRegex = { $regex: search.trim(), $options: 'i' };
-      query.$or = [
+      searchConditions = [
         { customerName: searchRegex },
         { cnic: searchRegex },
         { refNo: searchRegex },
@@ -357,17 +358,42 @@ export class BankOrdersService {
       query.bankId = new Types.ObjectId(bankId);
     }
 
-    // Add date range filter (for orderDate)
+    // Add date range filter (for orderDate OR createdAt when no status filter)
+    let dateConditions: any[] | null = null;
     if (startDate || endDate) {
-      query.orderDate = {};
+      const dateQuery: any = {};
       if (startDate) {
-        query.orderDate.$gte = startDate;
+        dateQuery.$gte = startDate;
       }
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999); // Include entire end date
-        query.orderDate.$lte = end;
+        dateQuery.$lte = end;
       }
+
+      // If no status filter is active, match orderDate OR createdAt
+      if (!status && !statusFilter) {
+        dateConditions = [
+          { orderDate: dateQuery },
+          { createdAt: dateQuery }
+        ];
+      } else {
+        // If status filter is active, only filter by orderDate
+        query.orderDate = dateQuery;
+      }
+    }
+
+    // Combine search and date conditions properly
+    if (searchConditions && dateConditions) {
+      // Both search and date need OR conditions, combine with AND
+      query.$and = query.$and || [];
+      query.$and.push({ $or: searchConditions }, { $or: dateConditions });
+    } else if (searchConditions) {
+      // Only search needs OR
+      query.$or = searchConditions;
+    } else if (dateConditions) {
+      // Only date needs OR
+      query.$or = dateConditions;
     }
 
     const [data, total] = await Promise.all([

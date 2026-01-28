@@ -7,6 +7,8 @@ import { Bip, BipSchema } from '@modules/bip/schemas/bip.schema';
 import { Product, ProductSchema } from '@modules/products/schemas/product.schema';
 import { Vendor, VendorSchema } from '@modules/vendors/schemas/vendor.schema';
 import { PurchaseOrder, PurchaseOrderSchema } from '@modules/purchase-orders/schemas/purchase-order.schema';
+import { Bank, BankSchema } from '@modules/banks/schemas/bank.schema';
+import { Shipment, ShipmentSchema } from '@modules/shipments/schemas/shipment.schema';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { PurchaseOrder, PurchaseOrderSchema } from '@modules/purchase-orders/sch
       { name: Product.name, schema: ProductSchema },
       { name: Vendor.name, schema: VendorSchema },
       { name: PurchaseOrder.name, schema: PurchaseOrderSchema },
+      { name: Bank.name, schema: BankSchema },
+      { name: Shipment.name, schema: ShipmentSchema },
     ]),
   ],
   controllers: [DashboardController],

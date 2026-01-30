@@ -27,6 +27,7 @@ import { ShipmentsModule } from '@modules/shipments/shipments.module';
 import { DeliveryChallansModule } from '@modules/delivery-challans/delivery-challans.module';
 import { WebhooksModule } from '@modules/webhooks/webhooks.module';
 import { WhatsAppModule } from '@modules/whatsapp/whatsapp.module';
+import { InvoicesModule } from '@modules/invoices/invoices.module';
 
 // Guards
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
@@ -82,6 +83,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     WebhooksModule,
     WhatsAppModule,
     DashboardModule,
+    InvoicesModule,
   ],
   providers: [
     // Global guards

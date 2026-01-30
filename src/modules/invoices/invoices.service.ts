@@ -56,7 +56,14 @@ export class InvoicesService {
             },
           })
           .populate('productId', 'name')
-          .populate('shipmentId', 'trackingNumber consignmentNumber')
+          .populate({
+            path: 'shipmentId',
+            select: 'trackingNumber consignmentNumber courierId',
+            populate: {
+              path: 'courierId',
+              select: 'courierName',
+            },
+          })
           .sort({ orderDate: 1 })
           .exec(),
         this.bankOrderModel
@@ -87,7 +94,14 @@ export class InvoicesService {
             },
           })
           .populate('productId', 'name')
-          .populate('shipmentId', 'trackingNumber consignmentNumber')
+          .populate({
+            path: 'shipmentId',
+            select: 'trackingNumber consignmentNumber courierId',
+            populate: {
+              path: 'courierId',
+              select: 'courierName',
+            },
+          })
           .sort({ orderDate: 1 })
           .exec(),
         this.bipModel
@@ -316,17 +330,19 @@ export class InvoicesService {
 
     // Add tracking data (only for dispatched orders with shipment)
     for (const order of dispatchedOrders) {
-      const trackingNumber = order.shipmentId
-        ? (order.shipmentId as any).consignmentNumber ||
-          (order.shipmentId as any).trackingNumber
+      const shipment = order.shipmentId as any;
+      const courierName = shipment?.courierId?.courierName || 'N/A';
+      const trackingNumber = shipment
+        ? shipment.consignmentNumber || shipment.trackingNumber
         : 'N/A';
+      const trackingDetails = `${courierName} - ${trackingNumber}`;
 
       if (orderType === InvoiceOrderType.BANK_ORDERS) {
         trackingSheet.addRow([
           order.cnic,
           order.customerName,
           order.city,
-          trackingNumber,
+          trackingDetails,
         ]);
       } else {
         trackingSheet.addRow([
@@ -334,7 +350,7 @@ export class InvoicesService {
           order.cnic,
           order.customerName,
           order.city,
-          trackingNumber,
+          trackingDetails,
         ]);
       }
     }
@@ -345,7 +361,7 @@ export class InvoicesService {
         { width: 18 }, // CNIC
         { width: 25 }, // CUSTOMER NAME
         { width: 15 }, // CITY
-        { width: 25 }, // Tracking Details
+        { width: 35 }, // Tracking Details (Courier Name - Tracking Number)
       ];
     } else {
       trackingSheet.columns = [
@@ -353,7 +369,7 @@ export class InvoicesService {
         { width: 18 }, // CNIC
         { width: 25 }, // CUSTOMER NAME
         { width: 15 }, // CITY
-        { width: 25 }, // Tracking Details
+        { width: 35 }, // Tracking Details (Courier Name - Tracking Number)
       ];
     }
 

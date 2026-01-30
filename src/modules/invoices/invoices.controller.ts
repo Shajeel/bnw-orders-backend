@@ -63,7 +63,7 @@ export class InvoicesController {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', buffer.length);
+    res.setHeader('Content-Length', (buffer as any).length);
 
     res.status(HttpStatus.OK).send(buffer);
   }

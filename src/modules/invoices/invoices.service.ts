@@ -23,7 +23,7 @@ export class InvoicesService {
     startDate: string,
     endDate: string,
     orderType: InvoiceOrderType,
-  ): Promise<ExcelJS.Buffer> {
+  ) {
     // Validate bank exists
     const bank = await this.bankModel.findOne({
       _id: bankId,
@@ -257,9 +257,9 @@ export class InvoicesService {
     ];
 
     // Add borders to all data cells
-    invoiceSheet.eachRow((row, rowNumber) => {
+    invoiceSheet.eachRow((row: any, rowNumber: number) => {
       if (rowNumber >= 4) {
-        row.eachCell((cell) => {
+        row.eachCell((cell: any) => {
           cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -358,9 +358,9 @@ export class InvoicesService {
     }
 
     // Add borders to all data cells
-    trackingSheet.eachRow((row, rowNumber) => {
+    trackingSheet.eachRow((row: any, rowNumber: number) => {
       if (rowNumber >= 4) {
-        row.eachCell((cell) => {
+        row.eachCell((cell: any) => {
           cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -373,6 +373,6 @@ export class InvoicesService {
 
     // Generate buffer
     const buffer = await workbook.xlsx.writeBuffer();
-    return buffer as ExcelJS.Buffer;
+    return buffer;
   }
 }

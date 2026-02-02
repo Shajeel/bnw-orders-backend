@@ -741,6 +741,28 @@ export class BipService {
       };
     }
 
+    // Prevent backward status changes - don't update to CONFIRMED if order has progressed
+    if (status === 'confirmed') {
+      const forwardStatuses = [
+        OrderStatus.CONFIRMED,
+        OrderStatus.PROCESSING,
+        OrderStatus.DISPATCH,
+        OrderStatus.SHIPPED,
+        OrderStatus.DELIVERED,
+      ];
+
+      if (forwardStatuses.includes(order.status)) {
+        return {
+          success: false,
+          message: `Order cannot be confirmed as it has already progressed to ${order.status} status`,
+          order: {
+            eforms: order.eforms,
+            status: order.status,
+          },
+        };
+      }
+    }
+
     // Update order status
     const newStatus =
       status === 'confirmed' ? OrderStatus.CONFIRMED : OrderStatus.CANCELLED;
@@ -783,6 +805,28 @@ export class BipService {
         success: false,
         message: `BIP order with PO number ${poNumber} not found`,
       };
+    }
+
+    // Prevent backward status changes - don't update to CONFIRMED if order has progressed
+    if (status === 'confirmed') {
+      const forwardStatuses = [
+        OrderStatus.CONFIRMED,
+        OrderStatus.PROCESSING,
+        OrderStatus.DISPATCH,
+        OrderStatus.SHIPPED,
+        OrderStatus.DELIVERED,
+      ];
+
+      if (forwardStatuses.includes(order.status)) {
+        return {
+          success: false,
+          message: `Order cannot be confirmed as it has already progressed to ${order.status} status`,
+          order: {
+            eforms: order.eforms,
+            status: order.status,
+          },
+        };
+      }
     }
 
     // Update order status

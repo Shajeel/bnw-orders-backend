@@ -221,9 +221,7 @@ export class InvoicesService {
       invoiceSheet.addRow(['CANCELLED ORDERS']).font = { bold: true, size: 12 };
 
       for (const order of cancelledOrders) {
-        const productName = orderType === InvoiceOrderType.BANK_ORDERS
-          ? `${order.brand} ${order.product}`
-          : order.product;
+        const productName = order.product;
 
         const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : '';
 

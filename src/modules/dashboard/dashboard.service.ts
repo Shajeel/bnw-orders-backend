@@ -855,6 +855,143 @@ export class DashboardService {
       })(),
     ]);
 
+    // ==================== WEEKLY BREAKDOWN ====================
+    // Calculate date range for weekly breakdown
+    let weekStartDate: Date;
+    let weekEndDate: Date;
+
+    if (startDate && endDate) {
+      // Use provided date range
+      weekStartDate = new Date(startDate);
+      weekEndDate = new Date(endDate);
+      weekEndDate.setHours(23, 59, 59, 999);
+    } else {
+      // Default to last 7 days
+      weekEndDate = new Date();
+      weekEndDate.setHours(23, 59, 59, 999);
+      weekStartDate = new Date();
+      weekStartDate.setDate(weekStartDate.getDate() - 6); // Last 7 days including today
+      weekStartDate.setHours(0, 0, 0, 0);
+    }
+
+    const weeklyDateFilter = {
+      isDeleted: false,
+      orderDate: {
+        $gte: weekStartDate,
+        $lte: weekEndDate,
+      },
+    };
+
+    // Aggregate orders by date and status for both order types
+    const [bankWeeklyStats, bipWeeklyStats] = await Promise.all([
+      includeBankOrders
+        ? this.bankOrderModel.aggregate([
+            { $match: weeklyDateFilter },
+            {
+              $group: {
+                _id: {
+                  date: {
+                    $dateToString: { format: '%Y-%m-%d', date: '$orderDate' },
+                  },
+                  status: '$status',
+                },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { '_id.date': 1 } },
+          ])
+        : Promise.resolve([]),
+      includeBipOrders
+        ? this.bipModel.aggregate([
+            { $match: weeklyDateFilter },
+            {
+              $group: {
+                _id: {
+                  date: {
+                    $dateToString: { format: '%Y-%m-%d', date: '$orderDate' },
+                  },
+                  status: '$status',
+                },
+                count: { $sum: 1 },
+              },
+            },
+            { $sort: { '_id.date': 1 } },
+          ])
+        : Promise.resolve([]),
+    ]);
+
+    // Combine and structure weekly stats
+    const weeklyStatsMap = new Map<
+      string,
+      {
+        date: string;
+        total: number;
+        confirmed: number;
+        processing: number;
+        dispatched: number;
+        cancelled: number;
+      }
+    >();
+
+    // Process bank orders
+    for (const stat of bankWeeklyStats) {
+      const date = stat._id.date;
+      if (!weeklyStatsMap.has(date)) {
+        weeklyStatsMap.set(date, {
+          date,
+          total: 0,
+          confirmed: 0,
+          processing: 0,
+          dispatched: 0,
+          cancelled: 0,
+        });
+      }
+      const dayStats = weeklyStatsMap.get(date)!;
+      dayStats.total += stat.count;
+
+      if (stat._id.status === OrderStatus.CONFIRMED) {
+        dayStats.confirmed += stat.count;
+      } else if (stat._id.status === OrderStatus.PROCESSING) {
+        dayStats.processing += stat.count;
+      } else if (stat._id.status === OrderStatus.DISPATCH) {
+        dayStats.dispatched += stat.count;
+      } else if (stat._id.status === OrderStatus.CANCELLED) {
+        dayStats.cancelled += stat.count;
+      }
+    }
+
+    // Process BIP orders
+    for (const stat of bipWeeklyStats) {
+      const date = stat._id.date;
+      if (!weeklyStatsMap.has(date)) {
+        weeklyStatsMap.set(date, {
+          date,
+          total: 0,
+          confirmed: 0,
+          processing: 0,
+          dispatched: 0,
+          cancelled: 0,
+        });
+      }
+      const dayStats = weeklyStatsMap.get(date)!;
+      dayStats.total += stat.count;
+
+      if (stat._id.status === OrderStatus.CONFIRMED) {
+        dayStats.confirmed += stat.count;
+      } else if (stat._id.status === OrderStatus.PROCESSING) {
+        dayStats.processing += stat.count;
+      } else if (stat._id.status === OrderStatus.DISPATCH) {
+        dayStats.dispatched += stat.count;
+      } else if (stat._id.status === OrderStatus.CANCELLED) {
+        dayStats.cancelled += stat.count;
+      }
+    }
+
+    // Convert map to array and sort by date
+    const weeklyBreakdown = Array.from(weeklyStatsMap.values()).sort(
+      (a, b) => a.date.localeCompare(b.date),
+    );
+
     return {
       topCards: {
         totalOrdersToday,
@@ -875,6 +1012,7 @@ export class DashboardService {
         pendingDispatchValue: financialOverview[2],
         deliveredValue: financialOverview[3],
       },
+      weeklyBreakdown,
     };
   }
 }

@@ -15,8 +15,8 @@ export default () => ({
   jwt: {
     secret: process.env.JWT_SECRET || 'change-this-secret',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'change-this-refresh-secret',
-    accessExpiration: process.env.JWT_ACCESS_EXPIRATION || '15m',
-    refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
+    accessExpiration: process.env.JWT_ACCESS_EXPIRATION || '30d',
+    refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '60d',
   },
   security: {
     bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10),

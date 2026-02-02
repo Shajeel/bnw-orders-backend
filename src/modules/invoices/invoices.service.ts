@@ -182,9 +182,7 @@ export class InvoicesService {
     invoiceSheet.addRow(['DISPATCHED ORDERS']).font = { bold: true, size: 12 };
 
     for (const order of dispatchedOrders) {
-      const productName = orderType === InvoiceOrderType.BANK_ORDERS
-        ? `${order.brand} ${order.product}`
-        : order.product;
+      const productName = order.product;
 
       const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : '';
 

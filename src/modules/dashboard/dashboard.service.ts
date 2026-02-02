@@ -856,29 +856,84 @@ export class DashboardService {
     ]);
 
     // ==================== WEEKLY BREAKDOWN ====================
-    // Calculate date range for weekly breakdown
-    let weekStartDate: Date;
-    let weekEndDate: Date;
+    // Get last 7 dates that have orders (not last 7 calendar days)
+    let weeklyDateFilter: any;
 
     if (startDate && endDate) {
       // Use provided date range
-      weekStartDate = new Date(startDate);
-      weekEndDate = new Date(endDate);
+      const weekStartDate = new Date(startDate);
+      const weekEndDate = new Date(endDate);
       weekEndDate.setHours(23, 59, 59, 999);
+
+      weeklyDateFilter = {
+        isDeleted: false,
+        orderDate: {
+          $gte: weekStartDate,
+          $lte: weekEndDate,
+        },
+      };
     } else {
-      // Default to last 7 days
-      weekEndDate = new Date();
-      weekEndDate.setHours(23, 59, 59, 999);
-      weekStartDate = new Date();
-      weekStartDate.setDate(weekStartDate.getDate() - 6); // Last 7 days including today
-      weekStartDate.setHours(0, 0, 0, 0);
+      // Get orders from last 60 days to ensure we have enough data to find 7 dates with orders
+      const lookbackDate = new Date();
+      lookbackDate.setDate(lookbackDate.getDate() - 60);
+      lookbackDate.setHours(0, 0, 0, 0);
+
+      weeklyDateFilter = {
+        isDeleted: false,
+        orderDate: {
+          $gte: lookbackDate,
+        },
+      };
     }
 
-    const weeklyDateFilter = {
+    // First, get distinct dates with orders from both models
+    const [bankDistinctDates, bipDistinctDates] = await Promise.all([
+      includeBankOrders
+        ? this.bankOrderModel.aggregate([
+            { $match: weeklyDateFilter },
+            {
+              $group: {
+                _id: {
+                  $dateToString: { format: '%Y-%m-%d', date: '$orderDate' },
+                },
+              },
+            },
+            { $sort: { _id: -1 } }, // Sort descending to get most recent first
+          ])
+        : Promise.resolve([]),
+      includeBipOrders
+        ? this.bipModel.aggregate([
+            { $match: weeklyDateFilter },
+            {
+              $group: {
+                _id: {
+                  $dateToString: { format: '%Y-%m-%d', date: '$orderDate' },
+                },
+              },
+            },
+            { $sort: { _id: -1 } },
+          ])
+        : Promise.resolve([]),
+    ]);
+
+    // Combine and get unique dates, sorted descending
+    const allDatesSet = new Set<string>();
+    bankDistinctDates.forEach((item) => allDatesSet.add(item._id));
+    bipDistinctDates.forEach((item) => allDatesSet.add(item._id));
+
+    const sortedDates = Array.from(allDatesSet).sort((a, b) => b.localeCompare(a));
+
+    // Take last 7 dates (or fewer if not enough dates with orders)
+    const last7Dates = startDate && endDate ? sortedDates : sortedDates.slice(0, 7);
+
+    // Now get detailed stats for these specific dates
+    const dateFilterForStats = {
       isDeleted: false,
-      orderDate: {
-        $gte: weekStartDate,
-        $lte: weekEndDate,
+      $expr: {
+        $in: [
+          { $dateToString: { format: '%Y-%m-%d', date: '$orderDate' } },
+          last7Dates,
+        ],
       },
     };
 
@@ -886,7 +941,7 @@ export class DashboardService {
     const [bankWeeklyStats, bipWeeklyStats] = await Promise.all([
       includeBankOrders
         ? this.bankOrderModel.aggregate([
-            { $match: weeklyDateFilter },
+            { $match: dateFilterForStats },
             {
               $group: {
                 _id: {
@@ -903,7 +958,7 @@ export class DashboardService {
         : Promise.resolve([]),
       includeBipOrders
         ? this.bipModel.aggregate([
-            { $match: weeklyDateFilter },
+            { $match: dateFilterForStats },
             {
               $group: {
                 _id: {

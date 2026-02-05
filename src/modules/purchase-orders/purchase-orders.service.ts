@@ -212,7 +212,7 @@ export class PurchaseOrdersService {
         });
       }
 
-      // Add date range filter
+      // Add date range filter on linked order's orderDate
       if (startDate || endDate) {
         const dateMatch: any = {};
         if (startDate) {
@@ -224,7 +224,12 @@ export class PurchaseOrdersService {
           dateMatch.$lte = end;
         }
         pipeline.push({
-          $match: { createdAt: dateMatch },
+          $match: {
+            $or: [
+              { 'bankOrder.orderDate': dateMatch },
+              { 'bipOrder.orderDate': dateMatch },
+            ],
+          },
         });
       }
 
@@ -320,17 +325,33 @@ export class PurchaseOrdersService {
       query.status = status;
     }
 
-    // Add date range filter
+    // Add date range filter on linked order's orderDate
     if (startDate || endDate) {
-      query.createdAt = {};
+      const dateMatch: any = {};
       if (startDate) {
-        query.createdAt.$gte = new Date(startDate);
+        dateMatch.$gte = new Date(startDate);
       }
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
-        query.createdAt.$lte = end;
+        dateMatch.$lte = end;
       }
+
+      // Find bank order and BIP order IDs within the date range
+      const [bankOrderIds, bipOrderIds] = await Promise.all([
+        this.bankOrderModel.find({ orderDate: dateMatch, isDeleted: false }).select('_id').exec(),
+        this.bipModel.find({ orderDate: dateMatch, isDeleted: false }).select('_id').exec(),
+      ]);
+
+      const matchingIds = [
+        ...bankOrderIds.map((o) => o._id),
+        ...bipOrderIds.map((o) => o._id),
+      ];
+
+      query.$or = [
+        { bankOrderId: { $in: matchingIds } },
+        { bipOrderId: { $in: matchingIds } },
+      ];
     }
 
     const [data, total] = await Promise.all([

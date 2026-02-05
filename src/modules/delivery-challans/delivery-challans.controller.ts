@@ -123,6 +123,20 @@ export class DeliveryChallansController {
     type: String,
     description: 'Filter by customer name',
   })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Filter challans from this date (ISO format)',
+    example: '2026-02-02T00:00:00.000Z',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'Filter challans up to this date (ISO format)',
+    example: '2026-02-05T23:59:59.999Z',
+  })
   @ApiResponse({
     status: 200,
     description: 'Delivery challans retrieved successfully',
@@ -134,6 +148,8 @@ export class DeliveryChallansController {
     @Query('limit') limit?: number,
     @Query('trackingNumber') trackingNumber?: string,
     @Query('customerName') customerName?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<{
     data: DeliveryChallan[];
     total: number;
@@ -145,6 +161,8 @@ export class DeliveryChallansController {
       limit ? Number(limit) : 10,
       trackingNumber,
       customerName,
+      startDate,
+      endDate,
     );
   }
 

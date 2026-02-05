@@ -373,6 +373,8 @@ export class DeliveryChallansService {
     limit: number = 1000,
     trackingNumber?: string,
     customerName?: string,
+    startDate?: string,
+    endDate?: string,
   ): Promise<{
     data: DeliveryChallan[];
     total: number;
@@ -388,6 +390,20 @@ export class DeliveryChallansService {
 
     if (customerName) {
       query.customerName = { $regex: customerName, $options: 'i' };
+    }
+
+    if (startDate || endDate) {
+      query.challanDate = {};
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setUTCHours(0, 0, 0, 0);
+        query.challanDate.$gte = start;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setUTCHours(23, 59, 59, 999);
+        query.challanDate.$lte = end;
+      }
     }
 
     const skip = (page - 1) * limit;

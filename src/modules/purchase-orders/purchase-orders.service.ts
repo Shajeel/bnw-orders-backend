@@ -188,6 +188,7 @@ export class PurchaseOrdersService {
               { 'vendor.vendorName': searchRegex },
               { 'products.productName': searchRegex },
               { 'products.bankProductNumber': searchRegex },
+              { 'products.serialNumber': searchRegex },
               { poNumber: searchRegex },
               { 'bipOrder.eforms': searchRegex },
             ],

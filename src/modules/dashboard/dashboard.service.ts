@@ -151,7 +151,7 @@ export class DashboardService {
       }
       if (endDate) {
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
+        end.setUTCHours(23, 59, 59, 999);
         dateFilter.createdAt.$lte = end;
       }
     }
@@ -161,7 +161,7 @@ export class DashboardService {
 
     // Get today's date range for "today" stats
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const todayFilter = {
@@ -863,7 +863,7 @@ export class DashboardService {
       // Use provided date range
       const weekStartDate = new Date(startDate);
       const weekEndDate = new Date(endDate);
-      weekEndDate.setHours(23, 59, 59, 999);
+      weekEndDate.setUTCHours(23, 59, 59, 999);
 
       weeklyDateFilter = {
         isDeleted: false,
@@ -876,7 +876,7 @@ export class DashboardService {
       // Get orders from last 60 days to ensure we have enough data to find 7 dates with orders
       const lookbackDate = new Date();
       lookbackDate.setDate(lookbackDate.getDate() - 60);
-      lookbackDate.setHours(0, 0, 0, 0);
+      lookbackDate.setUTCHours(0, 0, 0, 0);
 
       weeklyDateFilter = {
         isDeleted: false,

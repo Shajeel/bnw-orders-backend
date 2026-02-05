@@ -326,7 +326,7 @@ export class BankOrdersService {
         }
         if (statusEndDate) {
           const end = new Date(statusEndDate);
-          end.setHours(23, 59, 59, 999);
+          end.setUTCHours(23, 59, 59, 999);
           timestampQuery.$lte = end;
         }
 
@@ -365,7 +365,7 @@ export class BankOrdersService {
       }
       if (endDate) {
         const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999); // Include entire end date
+        end.setUTCHours(23, 59, 59, 999); // Include entire end date
         query.orderDate.$lte = end;
       }
     }

@@ -15,11 +15,13 @@ import { UpdateBankOrderDto } from './dto/update-bank-order.dto';
 import { ProductType } from '@common/enums/product-type.enum';
 import { WhatsAppService } from '@common/services/whatsapp.service';
 import { OrderStatus } from '@common/enums/order-status.enum';
+import { PurchaseOrder } from '@modules/purchase-orders/schemas/purchase-order.schema';
 
 @Injectable()
 export class BankOrdersService {
   constructor(
     @InjectModel(BankOrder.name) private bankOrderModel: Model<BankOrder>,
+    @InjectModel(PurchaseOrder.name) private purchaseOrderModel: Model<any>,
     private productsService: ProductsService,
     @InjectModel('Bank') private bankModel: Model<any>,
     private whatsappService: WhatsAppService,
@@ -308,6 +310,26 @@ export class BankOrdersService {
         { brand: searchRegex },
         { giftCode: searchRegex },
       ];
+
+      // Also search by serial number in linked Purchase Orders
+      const purchaseOrdersWithSerial = await this.purchaseOrderModel
+        .find({
+          'products.serialNumber': search.trim(),
+          bankOrderId: { $exists: true, $ne: null },
+          isDeleted: false,
+        })
+        .select('bankOrderId')
+        .lean();
+
+      if (purchaseOrdersWithSerial.length > 0) {
+        const bankOrderIds = purchaseOrdersWithSerial
+          .map(po => po.bankOrderId)
+          .filter(id => id); // Filter out any null/undefined
+
+        if (bankOrderIds.length > 0) {
+          query.$or.push({ _id: { $in: bankOrderIds } });
+        }
+      }
     }
 
     // Add status filter - if statusStartDate/statusEndDate provided with status, filter by status history

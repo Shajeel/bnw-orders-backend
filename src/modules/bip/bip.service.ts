@@ -15,11 +15,13 @@ import { UpdateBipOrderDto } from './dto/update-bip-order.dto';
 import { ProductType } from '@common/enums/product-type.enum';
 import { WhatsAppService } from '@common/services/whatsapp.service';
 import { OrderStatus } from '@common/enums/order-status.enum';
+import { PurchaseOrder } from '@modules/purchase-orders/schemas/purchase-order.schema';
 
 @Injectable()
 export class BipService {
   constructor(
     @InjectModel(Bip.name) private bipModel: Model<Bip>,
+    @InjectModel(PurchaseOrder.name) private purchaseOrderModel: Model<any>,
     private productsService: ProductsService,
     @InjectModel('Bank') private bankModel: Model<any>,
     private whatsappService: WhatsAppService,
@@ -349,6 +351,26 @@ export class BipService {
         { giftCode: searchRegex },
         { authorizedReceiver: searchRegex },
       ];
+
+      // Also search by serial number in linked Purchase Orders
+      const purchaseOrdersWithSerial = await this.purchaseOrderModel
+        .find({
+          'products.serialNumber': search.trim(),
+          bipOrderId: { $exists: true, $ne: null },
+          isDeleted: false,
+        })
+        .select('bipOrderId')
+        .lean();
+
+      if (purchaseOrdersWithSerial.length > 0) {
+        const bipOrderIds = purchaseOrdersWithSerial
+          .map(po => po.bipOrderId)
+          .filter(id => id); // Filter out any null/undefined
+
+        if (bipOrderIds.length > 0) {
+          query.$or.push({ _id: { $in: bipOrderIds } });
+        }
+      }
     }
 
     // Add status filter - if statusStartDate/statusEndDate provided with status, filter by status history

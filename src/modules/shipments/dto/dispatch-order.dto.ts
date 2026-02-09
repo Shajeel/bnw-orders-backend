@@ -52,16 +52,6 @@ export class DispatchOrderDto {
   specialInstructions?: string;
 
   @ApiProperty({
-    example: 0.5,
-    description: 'Package weight in KG',
-    required: false,
-  })
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  weightInKg?: number;
-
-  @ApiProperty({
     example: false,
     description: 'Mark package as fragile',
     required: false,

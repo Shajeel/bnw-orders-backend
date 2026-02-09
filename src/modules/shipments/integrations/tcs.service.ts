@@ -20,7 +20,6 @@ export interface TcsBookingRequest {
   specialInstructions?: string;
   referenceNumber?: string;
   customerEmail?: string;
-  weightInKg?: number;
   fragile?: boolean;
   landmark?: string;
   length?: number;
@@ -221,13 +220,7 @@ export class TcsService {
       // Determine default weight based on service code
       // D (Detain) requires minimum 3KG, others default to 0.5KG
       const serviceCode = bookingData.serviceCode || 'O';
-      const defaultWeight = serviceCode === 'D' ? 3.0 : 0.5;
-      // Ensure weight is a valid decimal number for TCS API
-      let weight = bookingData.weightInKg ? Number(bookingData.weightInKg) : defaultWeight;
-      // Validate weight is a valid number
-      if (isNaN(weight) || weight <= 0) {
-        weight = defaultWeight;
-      }
+      const weight = serviceCode === 'D' ? 3.0 : 0.5;
 
       // Prepare TCS booking payload with all customer details
       const tcsPayload = {

@@ -220,7 +220,7 @@ export class TcsService {
       // Determine default weight based on service code
       // D (Detain) requires minimum 3KG, others default to 0.5KG
       const serviceCode = bookingData.serviceCode || 'O';
-      const weight = serviceCode === 'D' ? 3.0 : 0.5;
+      const weight: string = serviceCode === 'D' ? '3.0' : '0.5';
 
       // Prepare TCS booking payload with all customer details
       const tcsPayload = {

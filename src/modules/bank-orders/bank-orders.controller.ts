@@ -41,7 +41,7 @@ export class BankOrdersController {
   constructor(private readonly bankOrdersService: BankOrdersService) {}
 
   @Post('import')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Import bank orders from Excel file (Admin/Staff only)' })
   @ApiConsumes('multipart/form-data')
@@ -112,7 +112,7 @@ export class BankOrdersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all bank orders (paginated with search)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -155,7 +155,7 @@ export class BankOrdersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get bank order by ID' })
   @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Bank order data' })
@@ -165,7 +165,7 @@ export class BankOrdersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Update bank order details (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
   @ApiResponse({
@@ -199,7 +199,7 @@ export class BankOrdersController {
   }
 
   @Patch(':id/status')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Update bank order status (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Order status updated successfully' })
@@ -214,7 +214,7 @@ export class BankOrdersController {
   }
 
   @Post(':id/comments')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Add comment/note to bank order (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Comment added successfully' })
@@ -229,7 +229,7 @@ export class BankOrdersController {
   }
 
   @Post('whatsapp/send-confirmations')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Send WhatsApp order confirmations to selected customers (Admin/Staff only)' })
   @ApiResponse({
     status: 200,

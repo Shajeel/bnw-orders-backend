@@ -21,7 +21,7 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get dashboard statistics' })
   @ApiResponse({
     status: 200,
@@ -59,7 +59,7 @@ export class DashboardController {
   }
 
   @Get('comprehensive-stats')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({
     summary: 'Get comprehensive dashboard statistics with date and order type filtering',
   })

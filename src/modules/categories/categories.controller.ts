@@ -44,7 +44,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all categories (paginated)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -63,7 +63,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get category by ID' })
   @ApiParam({ name: 'id', description: 'Category MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Category data' })

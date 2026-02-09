@@ -35,7 +35,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Create a new product (Admin/Staff only)' })
   @ApiResponse({ status: 201, description: 'Product created successfully' })
   @ApiResponse({ status: 409, description: 'Bank product number already exists' })
@@ -46,7 +46,7 @@ export class ProductsController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all products (paginated with search and filter)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -89,7 +89,7 @@ export class ProductsController {
   }
 
   @Get('category/:categoryId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all products by category ID' })
   @ApiParam({ name: 'categoryId', description: 'Category MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'List of products in the category' })
@@ -99,7 +99,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get product by ID' })
   @ApiParam({ name: 'id', description: 'Product MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Product data with populated category' })
@@ -109,7 +109,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Update product (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'Product MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Product updated successfully' })
@@ -124,7 +124,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Delete product (Admin only)' })
   @ApiParam({ name: 'id', description: 'Product MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })

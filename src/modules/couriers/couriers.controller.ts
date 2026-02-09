@@ -45,7 +45,7 @@ export class CouriersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all couriers (paginated with filters)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -80,7 +80,7 @@ export class CouriersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get courier by ID' })
   @ApiParam({ name: 'id', description: 'Courier MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Courier data' })

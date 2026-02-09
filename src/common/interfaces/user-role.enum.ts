@@ -1,7 +1,9 @@
 export enum UserRole {
   ADMIN = 'admin',
   STAFF = 'staff',
-  DISPATCH = 'dispatch',
+  PURCHASER = 'purchaser',
+  ACCOUNTS = 'accounts',
+  DISPATCHER = 'dispatcher',
 }
 
 export const USER_ROLES = Object.values(UserRole);

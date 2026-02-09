@@ -41,7 +41,7 @@ export class DeliveryChallansController {
   ) {}
 
   @Post('bank-order/:id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Create delivery challan for a bank order' })
   @ApiParam({
     name: 'id',
@@ -68,7 +68,7 @@ export class DeliveryChallansController {
   }
 
   @Post('bip-order/:id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Create delivery challan for a BIP order' })
   @ApiParam({
     name: 'id',
@@ -95,7 +95,7 @@ export class DeliveryChallansController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all delivery challans with pagination' })
   @ApiQuery({
     name: 'page',
@@ -167,7 +167,7 @@ export class DeliveryChallansController {
   }
 
   @Get('order/:orderType/:orderId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get delivery challan for a specific order' })
   @ApiParam({
     name: 'orderType',
@@ -197,7 +197,7 @@ export class DeliveryChallansController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get a single delivery challan by ID' })
   @ApiParam({
     name: 'id',
@@ -218,7 +218,7 @@ export class DeliveryChallansController {
   }
 
   @Post('bulk-download')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Bulk download and merge multiple delivery challans into one PDF' })
   @ApiResponse({
     status: 200,
@@ -264,7 +264,7 @@ export class DeliveryChallansController {
   }
 
   @Get(':id/download')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Download delivery challan as PDF' })
   @ApiParam({
     name: 'id',

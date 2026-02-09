@@ -46,7 +46,7 @@ export class PurchaseOrdersController {
   constructor(private readonly purchaseOrdersService: PurchaseOrdersService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Create a new purchase order' })
   @ApiResponse({
     status: 201,
@@ -64,7 +64,7 @@ export class PurchaseOrdersController {
   }
 
   @Post('bulk-create')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Bulk create purchase orders from multiple bank/BIP orders' })
   @ApiResponse({
     status: 201,
@@ -93,7 +93,7 @@ export class PurchaseOrdersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Get all purchase orders with pagination' })
   @ApiQuery({
     name: 'page',
@@ -174,7 +174,7 @@ export class PurchaseOrdersController {
   }
 
   @Get('export')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Export purchase orders to Excel filtered by bank ID, date range, and order type' })
   @ApiQuery({
     name: 'bankId',
@@ -250,7 +250,7 @@ export class PurchaseOrdersController {
   }
 
   @Get('combinable/list')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Get list of POs that can be combined for a vendor' })
   @ApiQuery({
     name: 'vendorId',
@@ -293,7 +293,7 @@ export class PurchaseOrdersController {
   }
 
   @Post('combine/preview')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Generate preview of combined POs without saving' })
   @ApiResponse({
     status: 200,
@@ -331,7 +331,7 @@ export class PurchaseOrdersController {
   }
 
   @Post('merge')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Permanently merge multiple POs into one (Admin only)' })
   @ApiResponse({
     status: 201,
@@ -350,7 +350,7 @@ export class PurchaseOrdersController {
   }
 
   @Get('vendor/:vendorId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Get purchase order history for a specific vendor' })
   @ApiResponse({
     status: 200,
@@ -367,7 +367,7 @@ export class PurchaseOrdersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Get a single purchase order by ID' })
   @ApiResponse({
     status: 200,
@@ -383,7 +383,7 @@ export class PurchaseOrdersController {
   }
 
   @Get(':id/download')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Download purchase order as PDF' })
   @ApiResponse({
     status: 200,
@@ -446,7 +446,7 @@ export class PurchaseOrdersController {
   }
 
   @Post('bulk-update')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Bulk update multiple purchase orders with serial numbers (Admin/Staff only)' })
   @ApiResponse({
     status: 200,
@@ -495,7 +495,7 @@ export class PurchaseOrdersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Update purchase order with product serial numbers (Admin/Staff only)' })
   @ApiResponse({
     status: 200,
@@ -517,7 +517,7 @@ export class PurchaseOrdersController {
   }
 
   @Post(':id/cancel')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Cancel a purchase order (Admin/Staff only)' })
   @ApiResponse({
     status: 200,

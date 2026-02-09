@@ -36,7 +36,7 @@ export class ShipmentsController {
   constructor(private readonly shipmentsService: ShipmentsService) {}
 
   @Post('dispatch/bank-order/:id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Dispatch a bank order with courier' })
   @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
   @ApiResponse({ status: 201, description: 'Order dispatched successfully' })
@@ -51,7 +51,7 @@ export class ShipmentsController {
   }
 
   @Post('dispatch/bip-order/:id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Dispatch a BIP order with courier' })
   @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
   @ApiResponse({ status: 201, description: 'Order dispatched successfully' })
@@ -66,7 +66,7 @@ export class ShipmentsController {
   }
 
   @Post('dispatch/bank-order/:id/manual')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Manually dispatch a bank order with TCS Overland or Self Delivery (no API call)' })
   @ApiParam({ name: 'id', description: 'Bank Order MongoDB ObjectId' })
   @ApiResponse({ status: 201, description: 'Order dispatched manually with provided tracking details' })
@@ -80,7 +80,7 @@ export class ShipmentsController {
   }
 
   @Post('dispatch/bip-order/:id/manual')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Manually dispatch a BIP order with TCS Overland or Self Delivery (no API call)' })
   @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
   @ApiResponse({ status: 201, description: 'Order dispatched manually with provided tracking details' })
@@ -94,7 +94,7 @@ export class ShipmentsController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all shipments (paginated with filters)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -137,7 +137,7 @@ export class ShipmentsController {
   }
 
   @Get('tracking/:trackingNumber')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get shipment by tracking number' })
   @ApiParam({ name: 'trackingNumber', description: 'Courier tracking number' })
   @ApiResponse({ status: 200, description: 'Shipment data' })
@@ -147,7 +147,7 @@ export class ShipmentsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get shipment by ID' })
   @ApiParam({ name: 'id', description: 'Shipment MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Shipment data with populated references' })
@@ -157,7 +157,7 @@ export class ShipmentsController {
   }
 
   @Get(':id/track')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Track shipment with courier API' })
   @ApiParam({ name: 'id', description: 'Shipment MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Shipment tracking information from courier' })
@@ -168,7 +168,7 @@ export class ShipmentsController {
   }
 
   @Patch(':id/status')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Update shipment status' })
   @ApiParam({ name: 'id', description: 'Shipment MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Shipment status updated successfully' })
@@ -181,7 +181,7 @@ export class ShipmentsController {
   }
 
   @Post(':id/cancel')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Cancel shipment (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'Shipment MongoDB ObjectId' })
   @ApiQuery({

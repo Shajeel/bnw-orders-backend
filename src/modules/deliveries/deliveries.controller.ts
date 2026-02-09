@@ -94,7 +94,7 @@ export class DeliveriesController {
   }
 
   @Get('order/:bankOrderId')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'View delivery by bank order ID' })
   @ApiResponse({
     status: 200,
@@ -111,7 +111,7 @@ export class DeliveriesController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all deliveries with pagination and filters' })
   @ApiQuery({
     name: 'page',
@@ -165,7 +165,7 @@ export class DeliveriesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get a single delivery by ID' })
   @ApiResponse({
     status: 200,

@@ -42,7 +42,7 @@ export class BipController {
   constructor(private readonly bipService: BipService) {}
 
   @Post('import')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Import BIP orders from Excel file (Admin/Staff only)' })
   @ApiConsumes('multipart/form-data')
@@ -113,7 +113,7 @@ export class BipController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all BIP orders (paginated with search)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -156,7 +156,7 @@ export class BipController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get BIP order by ID' })
   @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'BIP order data' })
@@ -166,7 +166,7 @@ export class BipController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS)
   @ApiOperation({ summary: 'Update BIP order details (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
   @ApiResponse({
@@ -201,7 +201,7 @@ export class BipController {
   }
 
   @Patch(':id/status')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Update BIP order status (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Order status updated successfully' })
@@ -216,7 +216,7 @@ export class BipController {
   }
 
   @Post(':id/comments')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Add comment/note to BIP order (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'BIP Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Comment added successfully' })
@@ -231,7 +231,7 @@ export class BipController {
   }
 
   @Post('whatsapp/send-confirmations')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Send WhatsApp order confirmations to selected customers (Admin/Staff only)' })
   @ApiResponse({
     status: 200,

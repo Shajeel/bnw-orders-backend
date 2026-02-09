@@ -34,7 +34,7 @@ export class VendorsController {
   constructor(private readonly vendorsService: VendorsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Create a new vendor (Admin/Staff only)' })
   @ApiResponse({ status: 201, description: 'Vendor created successfully' })
   @ApiResponse({ status: 409, description: 'Vendor email already exists' })
@@ -44,7 +44,7 @@ export class VendorsController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all vendors (paginated with search and filter)' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -79,7 +79,7 @@ export class VendorsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER, UserRole.ACCOUNTS, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get vendor by ID' })
   @ApiParam({ name: 'id', description: 'Vendor MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Vendor data' })
@@ -89,7 +89,7 @@ export class VendorsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Update vendor (Admin/Staff only)' })
   @ApiParam({ name: 'id', description: 'Vendor MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Vendor updated successfully' })
@@ -104,7 +104,7 @@ export class VendorsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.PURCHASER)
   @ApiOperation({ summary: 'Delete vendor (Admin only)' })
   @ApiParam({ name: 'id', description: 'Vendor MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Vendor deleted successfully' })

@@ -42,7 +42,7 @@ export class OrdersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get all orders (optional filter by status)' })
   @ApiQuery({ name: 'status', required: false, enum: OrderStatus, description: 'Filter by order status' })
   @ApiResponse({ status: 200, description: 'List of orders' })
@@ -51,7 +51,7 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiParam({ name: 'id', description: 'Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Order data with populated user references' })
@@ -61,7 +61,7 @@ export class OrdersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCH)
+  @Roles(UserRole.ADMIN, UserRole.STAFF, UserRole.DISPATCHER)
   @ApiOperation({ summary: 'Update order (status, priority, etc.)' })
   @ApiParam({ name: 'id', description: 'Order MongoDB ObjectId' })
   @ApiResponse({ status: 200, description: 'Order updated successfully' })
